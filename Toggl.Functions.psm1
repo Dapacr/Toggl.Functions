@@ -1,5 +1,3 @@
-<#
-#>
 function Get-BillableTimeReport {
   [CmdletBinding()] 
   Param (
