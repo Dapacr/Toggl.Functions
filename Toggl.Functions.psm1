@@ -3,28 +3,22 @@ function Get-BillableTimeReport {
   Param (
     [Parameter(Position=0)]
     [Alias('Day')]
-    [datetime]$Date
+    [datetime]$Date = (Get-Date)
   )
 
   $UserAgent = "dcruz@dsatechnologies.com"
   $WorkspaceID = "789619"
-  $user = "982b4538c4ac97feff249d0c54463164" # <-- enter your API token here
-  $pass = "api_token"
-  $pair = "$($user):$($pass)"
-  $bytes = [System.Text.Encoding]::ASCII.GetBytes($pair)
-  $base64 = [System.Convert]::ToBase64String($bytes)
-  $basicAuthValue = "Basic $base64"
-  $headers = @{ Authorization = $basicAuthValue }
+  $User = "982b4538c4ac97feff249d0c54463164" # <-- enter your API token here
+  $Pass = "api_token"
+  $Pair = "$($User):$($Pass)"
+  $Bytes = [System.Text.Encoding]::ASCII.GetBytes($Pair)
+  $Base64 = [System.Convert]::ToBase64String($Bytes)
+  $BasicAuthValue = "Basic $Base64"
+  $Headers = @{ Authorization = $BasicAuthValue }
   $contentType = "application/json"
   $BillableHours = 0
   $OvertimeHours = 0
   $TotalHours = 0
-  if ($Date) {
-    $Date = $(Get-Date -Date $Date)
-  }
-  else {
-    $Date = Get-Date
-  }
   $CurrentDay = $Date.Day
   $CurrentMonth = $Date.Month
   $CurrentYear = $Date.Year
@@ -67,13 +61,13 @@ function Get-BillableTimeReport {
 
   # Query Toggl API for report details
   $uriReport = "https://toggl.com/reports/api/v2/details?since=$Since&until=$Until&display_hours=decimal&rounding=on&user_agent=$UserAgent&workspace_id=$WorkspaceID"
-  $TogglResponse = Invoke-RestMethod -Uri $uriReport -Headers $headers -ContentType $contentType
+  $TogglResponse = Invoke-RestMethod -Uri $uriReport -Headers $Headers -ContentType $contentType
   $responseTotal = $TogglResponse.total_count
   $pageNum = 1
   $DetailReport = @()
 
   while ($responseTotal -gt 0) { 
-    $TogglResponse = Invoke-RestMethod -Uri ($uriReport + '&page=' + $pageNum) -Headers $headers -ContentType $contentType
+    $TogglResponse = Invoke-RestMethod -Uri ($uriReport + '&page=' + $pageNum) -Headers $Headers -ContentType $contentType
     $TogglResponseData = $TogglResponse.data
     $DetailReport += $TogglResponseData
     $responseTotal = $responseTotal - $TogglResponse.per_page 
@@ -107,7 +101,8 @@ function Get-BillableTimeReport {
   $OvertimeHours = $TotalHours-$WorkingHours
   if ($OvertimeHours -lt 0) {
     Write-Output -InputObject ('Overtime Hours: {0:N2}' -f (0))
-  } else {
+  }
+  else {
     Write-Output -InputObject ('Overtime Hours: {0:N2}' -f ($OvertimeHours))
   }
   Write-Output -InputObject ("Total Hours: {0:N2}`n" -f $TotalHours)
