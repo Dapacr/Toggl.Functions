@@ -1,3 +1,1 @@
 # Toggl.Functions
-
-# Test update
