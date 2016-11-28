@@ -1,8 +1,9 @@
 function Get-BillableTimeReport {
   [CmdletBinding()] 
   Param (
-    [Parameter(Position=0)][Alias('Day')]
-    $Date
+    [Parameter(Position=0)]
+    [Alias('Day')]
+    [datetime]$Date
   )
 
   $UserAgent = "dcruz@dsatechnologies.com"
@@ -64,7 +65,7 @@ function Get-BillableTimeReport {
     $WorkingHours = $NumberOfWorkDays * 8
   }
 
-  # Generate report using Toggl API
+  # Query Toggl API for report details
   $uriReport = "https://toggl.com/reports/api/v2/details?since=$Since&until=$Until&display_hours=decimal&rounding=on&user_agent=$UserAgent&workspace_id=$WorkspaceID"
   $TogglResponse = Invoke-RestMethod -Uri $uriReport -Headers $headers -ContentType $contentType
   $responseTotal = $TogglResponse.total_count
@@ -80,7 +81,7 @@ function Get-BillableTimeReport {
     $pageNum++
   }
 
-  # Output billable time entries if verbose is enabled
+  # Output billable time entries if verbose is enabled (Orange projects are considered billable; all other colors are considered non-billable)
   if ($PSCmdlet.MyInvocation.BoundParameters['Verbose'].IsPresent) {
     Write-Output -InputObject "`nBillable Time Report"
     Write-Output -InputObject $DetailReport | Where-Object -FilterScript { $_.project_color -eq 3 } |
@@ -92,7 +93,7 @@ function Get-BillableTimeReport {
                             @{N='Duration'; E={"{0:N2}" -f ($_.Dur/1000/60/60)}}
   }
 
-  # Calculate billable and total hours
+  # Calculate billable and total hours (Orange projects are considered billable; all other colors are considered non-billable)
   foreach ($page in $DetailReport) {
     if ($page.project_color -eq 3) {
       $BillableHours += $page.Dur/1000/60/60
