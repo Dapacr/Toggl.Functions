@@ -78,19 +78,19 @@ function Get-BillableTimeReport {
         $pageNum++
     }
 
-    # Output billable time entries if verbose is enabled (Orange projects are considered billable; all other colors are considered non-billable)
+    # Output billable time entries if verbose is enabled
     if ($PSCmdlet.MyInvocation.BoundParameters['Verbose'].IsPresent) {
         Write-Output -InputObject "`nBillable Time Report"
-        Write-Output -InputObject $DetailReport | Where-Object -FilterScript { $_.project_color -eq 3 } |
-        Sort-Object -Property start |
-        Format-List -Property @{N='Date';E={get-date $_.start -Format d}},
-        Client,
-        Project,
-        Description,
-        @{N='Duration'; E={"{0:N2}" -f ($_.Dur/1000/60/60)}}
+        Write-Output -InputObject $DetailReport | Where-Object -FilterScript { $_.tags -eq 'Billable' } |
+            Sort-Object -Property start |
+                Format-List -Property @{N='Date';E={get-date $_.start -Format d}},
+                    Client,
+                    Project,
+                    Description,
+                    @{N='Duration'; E={"{0:N2}" -f ($_.Dur/1000/60/60)}}
     }
 
-    # Calculate billable, utilized, PTO, holiday and total hours (Orange projects are considered billable; all other colors are considered non-billable)
+    # Calculate billable, utilized, PTO, holiday and total hours
     foreach ($page in $DetailReport) {
         if ($page.tags -eq 'Billable') {
             $BillableHours += $page.Dur/1000/60/60
