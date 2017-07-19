@@ -1,14 +1,66 @@
+function Get-ReportData {
+    [CmdletBinding()] 
+    Param (
+        [Parameter(Position=0)]
+        [Alias('Day')]
+        [datetime]$Date = (Get-Date),
+        [Alias('Since')]
+        [Parameter(Position=1)]
+        [datetime]$From = (Get-Date),
+        [Alias('Until')]
+        [Parameter(Position=2)]
+        [datetime]$To = (Get-Date)               
+    )
+    
+    $UserAgent = "dcruz@dsatechnologies.com"
+    $WorkspaceID = "789619"
+    $User = "982b4538c4ac97feff249d0c54463164" # <-- enter your API token here
+    $Pass = "api_token"
+    $Pair = "$($User):$($Pass)"
+    $Bytes = [System.Text.Encoding]::ASCII.GetBytes($Pair)
+    $Base64 = [System.Convert]::ToBase64String($Bytes)
+    $BasicAuthValue = "Basic $Base64"
+    $Headers = @{ Authorization = $BasicAuthValue }
+    $contentType = "application/json"
+    $CurrentDay = $Date.Day
+    $CurrentMonth = $Date.Month
+    $CurrentYear = $Date.Year
+    $Since = "$($From.Year)-$($From.Month)-$($From.Day)"
+    $Until = "$($To.Year)-$($To.Month)-$($To.Day)"
+        
+    # Query Toggl API for report details
+    $uriReport = "https://toggl.com/reports/api/v2/details?since=$Since&until=$Until&display_hours=decimal&rounding=on&user_agent=$UserAgent&workspace_id=$WorkspaceID"
+    $TogglResponse = Invoke-RestMethod -Uri $uriReport -Headers $Headers -ContentType $contentType
+    $responseTotal = $TogglResponse.total_count
+    $pageNum = 1
+    $DetailReport = @()
+
+    while ($responseTotal -gt 0) { 
+        $TogglResponse = Invoke-RestMethod -Uri ($uriReport + '&page=' + $pageNum) -Headers $Headers -ContentType $contentType
+        $TogglResponseData = $TogglResponse.data
+        $DetailReport += $TogglResponseData
+        $responseTotal = $responseTotal - $TogglResponse.per_page 
+  
+        $pageNum++
+    }
+    
+    Write-Output $DetailReport
+}
+
 function Get-BillableTimeReport {
     [CmdletBinding()] 
     Param (
         [Parameter(Position=0)]
         [Alias('Day')]
-        [datetime]$Date = (Get-Date)
+        [datetime]$Date = $(if ((Get-Date).Hour -lt 17) { (Get-Date).AddDays(-1) } else { Get-Date }),
+        [Parameter(Position=1)]
+        [string]$UserAgent = $(if (Test-Path user_agent) { Get-Content user_agent }),     # Email address
+        [Parameter(Position=2)]
+        [string]$User = $(if (Test-Path api_key) { Get-Content api_key }),
+        [Parameter(Position=3)]
+        [string]$WorkspaceID = $(if (Test-Path workspace_id) { Get-Content workspace_id })
     )
 
-    $UserAgent = "dcruz@dsatechnologies.com"
-    $WorkspaceID = "789619"
-    $User = "982b4538c4ac97feff249d0c54463164" # <-- enter your API token here
     $Pass = "api_token"
     $Pair = "$($User):$($Pass)"
     $Bytes = [System.Text.Encoding]::ASCII.GetBytes($Pair)
@@ -82,12 +134,12 @@ function Get-BillableTimeReport {
     if ($PSCmdlet.MyInvocation.BoundParameters['Verbose'].IsPresent) {
         Write-Output -InputObject "`nBillable Time Report"
         Write-Output -InputObject $DetailReport | Where-Object -FilterScript { $_.tags -eq 'Billable' } |
-            Sort-Object -Property start |
-                Format-List -Property @{N='Date';E={get-date $_.start -Format d}},
-                    Client,
-                    Project,
-                    Description,
-                    @{N='Duration'; E={"{0:N2}" -f ($_.Dur/1000/60/60)}}
+        Sort-Object -Property start |
+        Format-List -Property @{N='Date';E={get-date $_.start -Format d}},
+        Client,
+        Project,
+        Description,
+        @{N='Duration'; E={"{0:N2}" -f ($_.Dur/1000/60/60)}}
     }
 
     # Calculate billable, utilized, PTO, holiday and total hours
