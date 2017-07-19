@@ -54,11 +54,11 @@ function Get-BillableTimeReport {
         [Alias('Day')]
         [datetime]$Date = $(if ((Get-Date).Hour -lt 17) { (Get-Date).AddDays(-1) } else { Get-Date }),
         [Parameter(Position=1)]
-        [string]$UserAgent = $(if (Test-Path user_agent) { Get-Content user_agent }),     # Email address
+        [string]$UserAgent = $(if (Test-Path user_agent) { Get-Content user_agent } else { Read-Host -Prompt 'Email Address' }),
         [Parameter(Position=2)]
-        [string]$User = $(if (Test-Path api_key) { Get-Content api_key }),
+        [string]$User = $(if (Test-Path api_token) { Get-Content api_token } else { Read-Host -Prompt 'API Token' }),
         [Parameter(Position=3)]
-        [string]$WorkspaceID = $(if (Test-Path workspace_id) { Get-Content workspace_id })
+        [string]$WorkspaceID = $(if (Test-Path workspace_id) { Get-Content workspace_id } else { Read-Host -Prompt 'Workspace ID' })
     )
 
     $Pass = "api_token"
