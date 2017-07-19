@@ -54,13 +54,13 @@ function Get-BillableTimeReport {
         [Alias('Day')]
         [datetime]$Date = $(if ((Get-Date).Hour -lt 17) { (Get-Date).AddDays(-1) } else { Get-Date }),
         [Parameter(Position=1)]
-        [string]$UserAgent = $(if (Test-Path user_agent) { Get-Content user_agent } else { Read-Host -Prompt 'Email Address' }),
+        [string]$UserAgent = $(if (Test-Path $PSScriptRoot\user_agent) { Get-Content $PSScriptRoot\user_agent } else { Set-Content -Value (Read-Host -Prompt 'Email Address') -Path $PSScriptRoot\user_agent -PassThru | Out-String }),
         [Parameter(Position=2)]
-        [string]$User = $(if (Test-Path api_token) { Get-Content api_token } else { Read-Host -Prompt 'API Token' }),
+        [string]$User = $(if (Test-Path $PSScriptRoot\api_token) { Get-Content $PSScriptRoot\api_token } else { $User = Set-Content -Value (Read-Host -Prompt 'API Token') -Path $PSScriptRoot\api_token -PassThru | Out-String }),
         [Parameter(Position=3)]
-        [string]$WorkspaceID = $(if (Test-Path workspace_id) { Get-Content workspace_id } else { Read-Host -Prompt 'Workspace ID' })
+        [string]$WorkspaceID = $(if (Test-Path $PSScriptRoot\workspace_id) { Get-Content $PSScriptRoot\workspace_id } else { Set-Content -Value (Read-Host -Prompt 'Workspace ID') -Path $PSScriptRoot\workspace_id -PassThru | Out-String })
     )
-
+    
     $Pass = "api_token"
     $Pair = "$($User):$($Pass)"
     $Bytes = [System.Text.Encoding]::ASCII.GetBytes($Pair)
