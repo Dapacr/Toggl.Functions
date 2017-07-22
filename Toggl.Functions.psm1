@@ -1,5 +1,5 @@
 function Get-ReportData {
-    [CmdletBinding()] 
+    [CmdletBinding()]
     Param (
         [Parameter(Position=0)]
         [Alias('Day')]
@@ -9,9 +9,9 @@ function Get-ReportData {
         [datetime]$From = (Get-Date),
         [Alias('Until')]
         [Parameter(Position=2)]
-        [datetime]$To = (Get-Date)               
+        [datetime]$To = (Get-Date)
     )
-    
+
     $UserAgent = "dcruz@dsatechnologies.com"
     $WorkspaceID = "789619"
     $User = "982b4538c4ac97feff249d0c54463164" # <-- enter your API token here
@@ -27,7 +27,7 @@ function Get-ReportData {
     $CurrentYear = $Date.Year
     $Since = "$($From.Year)-$($From.Month)-$($From.Day)"
     $Until = "$($To.Year)-$($To.Month)-$($To.Day)"
-        
+
     # Query Toggl API for report details
     $uriReport = "https://toggl.com/reports/api/v2/details?since=$Since&until=$Until&display_hours=decimal&rounding=on&user_agent=$UserAgent&workspace_id=$WorkspaceID"
     $TogglResponse = Invoke-RestMethod -Uri $uriReport -Headers $Headers -ContentType $contentType
@@ -35,20 +35,20 @@ function Get-ReportData {
     $pageNum = 1
     $DetailReport = @()
 
-    while ($responseTotal -gt 0) { 
+    while ($responseTotal -gt 0) {
         $TogglResponse = Invoke-RestMethod -Uri ($uriReport + '&page=' + $pageNum) -Headers $Headers -ContentType $contentType
         $TogglResponseData = $TogglResponse.data
         $DetailReport += $TogglResponseData
-        $responseTotal = $responseTotal - $TogglResponse.per_page 
-  
+        $responseTotal = $responseTotal - $TogglResponse.per_page
+
         $pageNum++
     }
-    
+
     Write-Output $DetailReport
 }
 
 function Get-BillableTimeReport {
-    [CmdletBinding()] 
+    [CmdletBinding()]
     Param (
         [Parameter(Position=0)]
         [Alias('Day')]
@@ -60,7 +60,7 @@ function Get-BillableTimeReport {
         [Parameter(Position=3)]
         [string]$WorkspaceID = $(if (Test-Path $PSScriptRoot\workspace_id) { Get-Content $PSScriptRoot\workspace_id } else { Set-Content -Value (Read-Host -Prompt 'Workspace ID') -Path $PSScriptRoot\workspace_id -PassThru | Out-String })
     )
-    
+
     $Pass = "api_token"
     $Pair = "$($User):$($Pass)"
     $Bytes = [System.Text.Encoding]::ASCII.GetBytes($Pair)
@@ -121,12 +121,12 @@ function Get-BillableTimeReport {
     $pageNum = 1
     $DetailReport = @()
 
-    while ($responseTotal -gt 0) { 
+    while ($responseTotal -gt 0) {
         $TogglResponse = Invoke-RestMethod -Uri ($uriReport + '&page=' + $pageNum) -Headers $Headers -ContentType $contentType
         $TogglResponseData = $TogglResponse.data
         $DetailReport += $TogglResponseData
-        $responseTotal = $responseTotal - $TogglResponse.per_page 
-  
+        $responseTotal = $responseTotal - $TogglResponse.per_page
+
         $pageNum++
     }
 
@@ -147,11 +147,11 @@ function Get-BillableTimeReport {
         if ($page.tags -eq 'Billable') {
             $BillableHours += $page.Dur/1000/60/60
         }
-  
+
         if ($page.tags -eq 'Utilized') {
             $UtilizedHours += $page.Dur/1000/60/60
         }
-      
+
         if ($page.tags -eq 'PTO') {
             $PtoHours += $page.Dur/1000/60/60
         }
@@ -159,13 +159,13 @@ function Get-BillableTimeReport {
         if ($page.tags -eq 'Holiday') {
             $HolidayHours += $page.Dur/1000/60/60
         }
-      
+
         $TotalHours += $page.Dur/1000/60/60
     }
-  
+
     # Output summary totals
     Write-Output -InputObject ("`nTotal Hours: {0:N2}`n" -f $TotalHours)
-    
+
     Write-Output -InputObject ("`tNormal: {0:N2}" -f $WorkingHours)
     $OvertimeHours = $TotalHours-$WorkingHours
     if ($OvertimeHours -lt 0) {
@@ -178,8 +178,8 @@ function Get-BillableTimeReport {
     Write-Output -InputObject ("`tHoliday: {0:N2}" -f $HolidayHours)
     Write-Output -InputObject ("`tBillable: {0:N2}" -f $BillableHours)
     Write-Output -InputObject ("`tUtilized: {0:N2}`n`n" -f $UtilizedHours)
-    
-    
+
+
     Write-Output -InputObject ("Percent Billable: {0:P0}`n" -f ($BillableHours/($WorkingHours-$PtoHours-$HolidayHours)))
     Write-Output -InputObject ("Percent Utilized: {0:P0}`n" -f (($BillableHours+$UtilizedHours)/($WorkingHours-$PtoHours-$HolidayHours)))
 }
