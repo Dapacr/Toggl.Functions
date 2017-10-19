@@ -1,79 +1,72 @@
-function Get-ReportData {
+function Get-TogglDetailedReport {
     [CmdletBinding()]
     Param (
-        [Parameter(Position=0)]
-        [Alias('Day')]
-        [datetime]$Date = (Get-Date),
-        [Alias('Since')]
-        [Parameter(Position=1)]
+        [Parameter(Position=0)][Alias('Since')]
         [datetime]$From = (Get-Date),
-        [Alias('Until')]
-        [Parameter(Position=2)]
-        [datetime]$To = (Get-Date)
+        [Parameter(Position=1)][Alias('Until')]
+        [datetime]$To = (Get-Date),
+        [string]$Client,
+        [string]$Project,
+        [string]$UserAgent = $(if (Test-Path $PSScriptRoot\user_agent) { Get-Content $PSScriptRoot\user_agent } else { Set-Content -Value (Read-Host -Prompt 'Email Address') -Path $PSScriptRoot\user_agent -PassThru | Out-String }),
+        [string]$User = $(if (Test-Path $PSScriptRoot\api_token) { Get-Content $PSScriptRoot\api_token } else { $User = Set-Content -Value (Read-Host -Prompt 'API Token') -Path $PSScriptRoot\api_token -PassThru | Out-String }),
+        [string]$WorkspaceID = $(if (Test-Path $PSScriptRoot\workspace_id) { Get-Content $PSScriptRoot\workspace_id } else { Set-Content -Value (Read-Host -Prompt 'Workspace ID') -Path $PSScriptRoot\workspace_id -PassThru | Out-String })
     )
 
-    $UserAgent = "dcruz@dsatechnologies.com"
-    $WorkspaceID = "789619"
-    $User = "982b4538c4ac97feff249d0c54463164" # <-- enter your API token here
-    $Pass = "api_token"
-    $Pair = "$($User):$($Pass)"
-    $Bytes = [System.Text.Encoding]::ASCII.GetBytes($Pair)
-    $Base64 = [System.Convert]::ToBase64String($Bytes)
-    $BasicAuthValue = "Basic $Base64"
-    $Headers = @{ Authorization = $BasicAuthValue }
-    $contentType = "application/json"
-    $CurrentDay = $Date.Day
-    $CurrentMonth = $Date.Month
-    $CurrentYear = $Date.Year
-    $Since = "$($From.Year)-$($From.Month)-$($From.Day)"
-    $Until = "$($To.Year)-$($To.Month)-$($To.Day)"
-
+    $pass = "api_token"
+    $pair = "$($User):$($pass)"
+    $bytes = [System.Text.Encoding]::ASCII.GetBytes($pair)
+    $base64 = [System.Convert]::ToBase64String($bytes)
+    $basic_auth_value = "Basic $base64"
+    $headers = @{Authorization=$basic_auth_value}
+    $content_type = "application/json"
+    $since = $From.ToString('yyyy-MM-dd')
+    $until = $To.ToString('yyyy-MM-dd')
+    
     # Query Toggl API for report details
-    $uriReport = "https://toggl.com/reports/api/v2/details?since=$Since&until=$Until&display_hours=decimal&rounding=on&user_agent=$UserAgent&workspace_id=$WorkspaceID"
-    $TogglResponse = Invoke-RestMethod -Uri $uriReport -Headers $Headers -ContentType $contentType
-    $responseTotal = $TogglResponse.total_count
-    $pageNum = 1
-    $DetailReport = @()
+    $uri_report = "https://toggl.com/reports/api/v2/details?since=$since&until=$until&display_hours=decimal&rounding=on&user_agent=$UserAgent&workspace_id=$WorkspaceID"
+    $toggl_response = Invoke-RestMethod -Uri $uri_report -Headers $headers -ContentType $content_type
+    $response_total = $toggl_response.total_count
+    $page_num = 1
+    $report = @()
 
-    while ($responseTotal -gt 0) {
-        $TogglResponse = Invoke-RestMethod -Uri ($uriReport + '&page=' + $pageNum) -Headers $Headers -ContentType $contentType
-        $TogglResponseData = $TogglResponse.data
-        $DetailReport += $TogglResponseData
-        $responseTotal = $responseTotal - $TogglResponse.per_page
+    while ($response_total -gt 0) {
+        $toggl_response = Invoke-RestMethod -Uri ($uri_report + '&page=' + $page_num) -Headers $headers -ContentType $content_type
+        $TogglResponseData = $toggl_response.data
+        $report += $TogglResponseData
+        $response_total = $response_total - $toggl_response.per_page
 
-        $pageNum++
+        $page_num++
     }
+    
+    $report = $report | Select-Object @{n='Date';e={Get-Date $_.start -Format MM/dd/yyyy}},
+                                      @{n='Client';e={$_.client}},
+                                      @{n='Project';e={$_.project -replace '.*?(\b\d+\b).*','$1'}},
+                                      @{n='Description';e={$_.description}},
+                                      @{n='Hours';e={'{0:n2}' -f ($_.dur/1000/60/60)}},
+                                      @{n='WorkType';e={$_.tags -as [string]}} | Sort-Object Date
 
-    Write-Output $DetailReport
+    if ($Client) {
+        $report = $report.Where{$_.Client -match $Client}
+    }
+    if ($Project) {
+        $report = $report.Where{$_.Project -match $Project}
+    }
+    
+    Write-Output $report
 }
 
-function Get-BillableTimeReport {
+
+function Get-TogglUtilizationReport {
     [CmdletBinding()]
     Param (
         [Parameter(Position=0)]
         [Alias('Day')]
         [datetime]$Date = $(if ((Get-Date).Hour -lt 17) { (Get-Date).AddDays(-1) } else { Get-Date }),
-        [Parameter(Position=1)]
         [string]$UserAgent = $(if (Test-Path $PSScriptRoot\user_agent) { Get-Content $PSScriptRoot\user_agent } else { Set-Content -Value (Read-Host -Prompt 'Email Address') -Path $PSScriptRoot\user_agent -PassThru | Out-String }),
-        [Parameter(Position=2)]
         [string]$User = $(if (Test-Path $PSScriptRoot\api_token) { Get-Content $PSScriptRoot\api_token } else { $User = Set-Content -Value (Read-Host -Prompt 'API Token') -Path $PSScriptRoot\api_token -PassThru | Out-String }),
-        [Parameter(Position=3)]
         [string]$WorkspaceID = $(if (Test-Path $PSScriptRoot\workspace_id) { Get-Content $PSScriptRoot\workspace_id } else { Set-Content -Value (Read-Host -Prompt 'Workspace ID') -Path $PSScriptRoot\workspace_id -PassThru | Out-String })
     )
 
-    $Pass = "api_token"
-    $Pair = "$($User):$($Pass)"
-    $Bytes = [System.Text.Encoding]::ASCII.GetBytes($Pair)
-    $Base64 = [System.Convert]::ToBase64String($Bytes)
-    $BasicAuthValue = "Basic $Base64"
-    $Headers = @{ Authorization = $BasicAuthValue }
-    $contentType = "application/json"
-    $BillableHours = 0
-    $UtilizedHours = 0
-    $PtoHours = 0
-    $HolidayHours = 0
-    $OvertimeHours = 0
-    $TotalHours = 0
     $CurrentDay = $Date.Day
     $CurrentMonth = $Date.Month
     $CurrentYear = $Date.Year
@@ -94,9 +87,9 @@ function Get-BillableTimeReport {
                 'Friday' { $NumberOfWorkDays += 1 }
             }
         }
+        
         $WorkingHours = $NumberOfWorkDays * 8
-    }
-    elseif ($CurrentDay -ge 16 -and $CurrentDay -le 31) {
+    } elseif ($CurrentDay -ge 16 -and $CurrentDay -le 31) {
         $PayPeriodStartDay = 16
         $Since = "$CurrentYear-$CurrentMonth-16"
         $Until = "$CurrentYear-$CurrentMonth-$CurrentDay"
@@ -111,75 +104,50 @@ function Get-BillableTimeReport {
                 'Friday' { $NumberOfWorkDays += 1 }
             }
         }
+        
         $WorkingHours = $NumberOfWorkDays * 8
     }
 
-    # Query Toggl API for report details
-    $uriReport = "https://toggl.com/reports/api/v2/details?since=$Since&until=$Until&display_hours=decimal&rounding=on&user_agent=$UserAgent&workspace_id=$WorkspaceID"
-    $TogglResponse = Invoke-RestMethod -Uri $uriReport -Headers $Headers -ContentType $contentType
-    $responseTotal = $TogglResponse.total_count
-    $pageNum = 1
-    $DetailReport = @()
+    $detailed_report = Get-TogglDetailedReport -From $Since -To $Until
 
-    while ($responseTotal -gt 0) {
-        $TogglResponse = Invoke-RestMethod -Uri ($uriReport + '&page=' + $pageNum) -Headers $Headers -ContentType $contentType
-        $TogglResponseData = $TogglResponse.data
-        $DetailReport += $TogglResponseData
-        $responseTotal = $responseTotal - $TogglResponse.per_page
-
-        $pageNum++
+    $TotalHours = ($detailed_report | Measure-Object -Property Hours -Sum).Sum
+    $BillableHours = ($detailed_report.Where{$_.WorkType -eq 'Billable'} | Measure-Object -Property Hours -Sum).Sum
+    if ($BillableHours -eq $null) {
+        $BillableHours = 0
     }
-
-    # Output billable time entries if verbose is enabled
-    if ($PSCmdlet.MyInvocation.BoundParameters['Verbose'].IsPresent) {
-        Write-Output -InputObject "`nBillable Time Report"
-        Write-Output -InputObject $DetailReport | Where-Object -FilterScript { $_.tags -eq 'Billable' } |
-        Sort-Object -Property start |
-        Format-List -Property @{N='Date';E={get-date $_.start -Format d}},
-        Client,
-        Project,
-        Description,
-        @{N='Duration'; E={"{0:N2}" -f ($_.Dur/1000/60/60)}}
+    $UtilizedHours = ($detailed_report.Where{$_.WorkType -eq 'Utilized'} | Measure-Object -Property Hours -Sum).Sum
+    if ($UtilizedHours -eq $null) {
+        $UtilizedHours = 0
     }
-
-    # Calculate billable, utilized, PTO, holiday and total hours
-    foreach ($page in $DetailReport) {
-        if ($page.tags -eq 'Billable') {
-            $BillableHours += $page.Dur/1000/60/60
-        }
-
-        if ($page.tags -eq 'Utilized') {
-            $UtilizedHours += $page.Dur/1000/60/60
-        }
-
-        if ($page.tags -eq 'PTO') {
-            $PtoHours += $page.Dur/1000/60/60
-        }
-
-        if ($page.tags -eq 'Holiday') {
-            $HolidayHours += $page.Dur/1000/60/60
-        }
-
-        $TotalHours += $page.Dur/1000/60/60
+    $PtoHours = ($detailed_report.Where{$_.WorkType -eq 'PTO'} | Measure-Object -Property Hours -Sum).Sum
+    if ($PtoHours -eq $null) {
+        $PtoHours = 0
     }
-
-    # Output summary totals
-    Write-Output -InputObject ("`nTotal Hours: {0:N2}`n" -f $TotalHours)
-
-    Write-Output -InputObject ("`tNormal: {0:N2}" -f $WorkingHours)
+    $HolidayHours = ($detailed_report.Where{$_.WorkType -eq 'Holiday'} | Measure-Object -Property Hours -Sum).Sum
+    if ($HolidayHours -eq $null) {
+        $HolidayHours = 0
+    }
+    $NonBillableHours = ($detailed_report.Where{$_.WorkType -eq 'Non-Billable'} | Measure-Object -Property Hours -Sum).Sum
+    if ($NonBillableHours -eq $null) {
+        $NonBillableHours = 0
+    }
     $OvertimeHours = $TotalHours-$WorkingHours
     if ($OvertimeHours -lt 0) {
-        Write-Output -InputObject ("`tOvertime: {0:N2}" -f (0))
+        $OvertimeHours = 0
     }
-    else {
-        Write-Output -InputObject ("`tOvertime: {0:N2}" -f ($OvertimeHours))
-    }
-    Write-Output -InputObject ("`tPTO: {0:N2}" -f $PTOHours)
-    Write-Output -InputObject ("`tHoliday: {0:N2}" -f $HolidayHours)
-    Write-Output -InputObject ("`tBillable: {0:N2}" -f $BillableHours)
-    Write-Output -InputObject ("`tUtilized: {0:N2}`n`n" -f $UtilizedHours)
-
-
-    Write-Output -InputObject ("Percent Billable: {0:P0}`n" -f ($BillableHours/($WorkingHours-$PtoHours-$HolidayHours)))
-    Write-Output -InputObject ("Percent Utilized: {0:P0}`n" -f (($BillableHours+$UtilizedHours)/($WorkingHours-$PtoHours-$HolidayHours)))
+    
+    # Output summary totals
+    # TODO Convert to a PSObject
+    Write-Output -InputObject ("`nTotal Hours: {0:N2}`n" -f $TotalHours)
+    
+    Write-Output -InputObject ("Normal: {0:N2}" -f $WorkingHours)
+    Write-Output -InputObject ("Overtime: {0:N2}" -f ($OvertimeHours))
+    Write-Output -InputObject ("PTO: {0:N2}" -f $PTOHours)
+    Write-Output -InputObject ("Holiday: {0:N2}" -f $HolidayHours)
+    Write-Output -InputObject ("Non-Billable: {0:N2}" -f $NonBillableHours)
+    Write-Output -InputObject ("Billable: {0:N2}" -f $BillableHours)
+    Write-Output -InputObject ("Utilized: {0:N2}`n" -f $UtilizedHours)
+    
+    Write-Output -InputObject ("Billable: {0:P0}" -f ($BillableHours/($WorkingHours-$PtoHours-$HolidayHours)))
+    Write-Output -InputObject ("Utilized: {0:P0}" -f (($BillableHours+$UtilizedHours)/($WorkingHours-$PtoHours-$HolidayHours)))
 }
