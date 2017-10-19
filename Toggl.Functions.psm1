@@ -69,47 +69,38 @@ function Get-TogglUtilizationReport {
         [string]$WorkspaceID = $(if (Test-Path $PSScriptRoot\workspace_id) { Get-Content $PSScriptRoot\workspace_id } else { Set-Content -Value (Read-Host -Prompt 'Workspace ID') -Path $PSScriptRoot\workspace_id -PassThru | Out-String })
     )
 
-    $CurrentDay = $Date.Day
-    $CurrentMonth = $Date.Month
-    $CurrentYear = $Date.Year
-
+    
     # Calculate normal working hours for the specified pay period
-    if ($CurrentDay -ge 1 -and $CurrentDay -le 15) {
+    $WorkingHours = 0
+    $work_days = 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'
+    if ($Date.Day -ge 1 -and $Date.Day -le 15) {
         $PayPeriodStartDay = 1
-        $Since = "$CurrentYear-$CurrentMonth-01"
-        $Until = "$CurrentYear-$CurrentMonth-$CurrentDay"
-        $NumberOfWorkDays = 0
+        $Since = '{0:yyyy-MM}-01' -f $Date
+        $Until = '{0:yyyy-MM-dd}' -f $Date
 
-        for ($x = $PayPeriodStartDay; $x -le $CurrentDay; $x += 1) {
-            switch ((get-date $CurrentYear-$CurrentMonth-$x).DayOfWeek) {
-                'Monday' { $NumberOfWorkDays += 1 }
-                'Tuesday' { $NumberOfWorkDays += 1 }
-                'Wednesday' { $NumberOfWorkDays += 1 }
-                'Thursday' { $NumberOfWorkDays += 1 }
-                'Friday' { $NumberOfWorkDays += 1 }
+        for ($x = $PayPeriodStartDay; $x -le $Date.Day; $x++) {
+            $day = '{0:yyyy-MM}-{1}' -f $Date, $x
+            $day_of_week = (Get-Date $day).DayOfWeek
+            
+            if ($day_of_week -in $work_days) {
+                $WorkingHours += 8
             }
         }
-        
-        $WorkingHours = $NumberOfWorkDays * 8
-    } elseif ($CurrentDay -ge 16 -and $CurrentDay -le 31) {
+    } elseif ($Date.Day -ge 16 -and $Date.Day -le 31) {
         $PayPeriodStartDay = 16
-        $Since = "$CurrentYear-$CurrentMonth-16"
-        $Until = "$CurrentYear-$CurrentMonth-$CurrentDay"
-        $NumberOfWorkDays = 0
+        $Since = '{0:yyyy-MM}-16' -f $Date
+        $Until = '{0:yyyy-MM-dd}' -f $Date
 
-        for ($x = $PayPeriodStartDay; $x -le $CurrentDay; $x += 1) {
-            switch ((get-date $CurrentYear-$CurrentMonth-$x).DayOfWeek) {
-                'Monday' { $NumberOfWorkDays += 1 }
-                'Tuesday' { $NumberOfWorkDays += 1 }
-                'Wednesday' { $NumberOfWorkDays += 1 }
-                'Thursday' { $NumberOfWorkDays += 1 }
-                'Friday' { $NumberOfWorkDays += 1 }
+        for ($x = $PayPeriodStartDay; $x -le $Date.Day; $x++) {
+            $day = '{0:yyyy-MM}-{1}' -f $Date, $x
+            $day_of_week = (Get-Date $day).DayOfWeek
+            
+            if ($day_of_week -in $work_days) {
+                $WorkingHours += 8
             }
         }
-        
-        $WorkingHours = $NumberOfWorkDays * 8
     }
-
+    
     $detailed_report = Get-TogglDetailedReport -From $Since -To $Until
 
     $TotalHours = ($detailed_report | Measure-Object -Property Hours -Sum).Sum
