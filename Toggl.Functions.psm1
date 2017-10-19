@@ -137,6 +137,8 @@ function Get-TogglUtilizationReport {
     if ($OvertimeHours -lt 0) {
         $OvertimeHours = 0
     }
+    $BillablePercent = ($BillableHours/($WorkingHours-$PtoHours-$HolidayHours))*100
+    $UtilizedPercent = (($BillableHours+$UtilizedHours)/($WorkingHours-$PtoHours-$HolidayHours))*100
     
     # Output summary totals
     $obj = New-Object -TypeName PSObject
@@ -148,8 +150,8 @@ function Get-TogglUtilizationReport {
     Add-Member -InputObject $obj -MemberType NoteProperty -Name Utilized -Value ('{0:N2}' -f $UtilizedHours)
     Add-Member -InputObject $obj -MemberType NoteProperty -Name Billable -Value ('{0:N2}' -f $BillableHours)
     Add-Member -InputObject $obj -MemberType NoteProperty -Name TotalHours -Value ('{0:N2}' -f $TotalHours)
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name BillablePercent -Value ('{0:N0}' -f (($BillableHours/($WorkingHours-$PtoHours-$HolidayHours))*100))
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name UtilizedPercent -Value ('{0:N0}' -f ((($BillableHours+$UtilizedHours)/($WorkingHours-$PtoHours-$HolidayHours))*100))
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name BillablePercent -Value ('{0:N0}' -f $BillablePercent)
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name UtilizedPercent -Value ('{0:N0}' -f $UtilizedPercent)
     
     Write-Output $obj
 }
