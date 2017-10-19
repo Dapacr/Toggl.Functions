@@ -57,6 +57,8 @@ function Get-TogglDetailedReport {
 
 
 function Get-TogglUtilizationReport {
+    # TODO Add the ability to run a report for multiple pay periods
+    
     [CmdletBinding()]
     Param (
         [Parameter(Position=0)]
@@ -138,16 +140,30 @@ function Get-TogglUtilizationReport {
     
     # Output summary totals
     # TODO Convert to a PSObject
-    Write-Output -InputObject ("`nTotal Hours: {0:N2}`n" -f $TotalHours)
+    #Write-Output -InputObject ("`nTotal Hours: {0:N2}`n" -f $TotalHours)
     
-    Write-Output -InputObject ("Normal: {0:N2}" -f $WorkingHours)
-    Write-Output -InputObject ("Overtime: {0:N2}" -f ($OvertimeHours))
-    Write-Output -InputObject ("PTO: {0:N2}" -f $PTOHours)
-    Write-Output -InputObject ("Holiday: {0:N2}" -f $HolidayHours)
-    Write-Output -InputObject ("Non-Billable: {0:N2}" -f $NonBillableHours)
-    Write-Output -InputObject ("Billable: {0:N2}" -f $BillableHours)
-    Write-Output -InputObject ("Utilized: {0:N2}`n" -f $UtilizedHours)
+    #Write-Output -InputObject ("Normal: {0:N2}" -f $WorkingHours)
+    #Write-Output -InputObject ("Overtime: {0:N2}" -f ($OvertimeHours))
+    #Write-Output -InputObject ("PTO: {0:N2}" -f $PTOHours)
+    #Write-Output -InputObject ("Holiday: {0:N2}" -f $HolidayHours)
+    #Write-Output -InputObject ("Non-Billable: {0:N2}" -f $NonBillableHours)
+    #Write-Output -InputObject ("Billable: {0:N2}" -f $BillableHours)
+    #Write-Output -InputObject ("Utilized: {0:N2}`n" -f $UtilizedHours)
     
-    Write-Output -InputObject ("Billable: {0:P0}" -f ($BillableHours/($WorkingHours-$PtoHours-$HolidayHours)))
-    Write-Output -InputObject ("Utilized: {0:P0}" -f (($BillableHours+$UtilizedHours)/($WorkingHours-$PtoHours-$HolidayHours)))
+    #Write-Output -InputObject ("Billable: {0:P0}" -f ($BillableHours/($WorkingHours-$PtoHours-$HolidayHours)))
+    #Write-Output -InputObject ("Utilized: {0:P0}" -f (($BillableHours+$UtilizedHours)/($WorkingHours-$PtoHours-$HolidayHours)))
+    
+    $obj = New-Object -TypeName PSObject
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name Normal -Value ('{0:N2}' -f $WorkingHours)
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name Overtime -Value ('{0:N2}' -f $OvertimeHours)
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name PTO -Value ('{0:N2}' -f $PTOHours)
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name Holiday -Value ('{0:N2}' -f $HolidayHours)
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name Non-Billable -Value ('{0:N2}' -f $NonBillableHours)
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name Utilized -Value ('{0:N2}' -f $UtilizedHours)
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name Billable -Value ('{0:N2}' -f $BillableHours)
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name TotalHours -Value ('{0:N2}' -f $TotalHours)
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name BillablePercent -Value ('{0:N0}' -f (($BillableHours/($WorkingHours-$PtoHours-$HolidayHours))*100))
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name UtilizedPercent -Value ('{0:N0}' -f ((($BillableHours+$UtilizedHours)/($WorkingHours-$PtoHours-$HolidayHours))*100))
+    
+    Write-Output $obj
 }
