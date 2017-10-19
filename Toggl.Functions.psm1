@@ -138,6 +138,7 @@ function Get-TogglUtilizationReport {
     
     # Output summary totals
     $obj = New-Object -TypeName PSObject
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name TotalHours -Value ('{0:N2}' -f $total_hours)
     Add-Member -InputObject $obj -MemberType NoteProperty -Name Normal -Value ('{0:N2}' -f $normal_hours)
     Add-Member -InputObject $obj -MemberType NoteProperty -Name Overtime -Value ('{0:N2}' -f $overtime_hours)
     Add-Member -InputObject $obj -MemberType NoteProperty -Name PTO -Value ('{0:N2}' -f $pto_hours)
@@ -145,7 +146,6 @@ function Get-TogglUtilizationReport {
     Add-Member -InputObject $obj -MemberType NoteProperty -Name Non-Billable -Value ('{0:N2}' -f $non_billable_hours)
     Add-Member -InputObject $obj -MemberType NoteProperty -Name Utilized -Value ('{0:N2}' -f $utilized_hours)
     Add-Member -InputObject $obj -MemberType NoteProperty -Name Billable -Value ('{0:N2}' -f $billable_hours)
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name TotalHours -Value ('{0:N2}' -f $total_hours)
     Add-Member -InputObject $obj -MemberType NoteProperty -Name BillablePercent -Value ('{0:N0}' -f $percent_billable)
     Add-Member -InputObject $obj -MemberType NoteProperty -Name UtilizedPercent -Value ('{0:N0}' -f $percent_utilized)
     
