@@ -62,8 +62,6 @@ function Get-TogglDetailedReport {
 
 
 function Get-TogglUtilizationReport {
-    # TODO Add the ability to run a report for multiple pay periods
-    
     [CmdletBinding()]
     Param (
         [Parameter(Position=0)]
