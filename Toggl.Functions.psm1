@@ -74,80 +74,103 @@ function Get-TogglUtilizationReport {
         [string]$WorkspaceID = $(if (Test-Path $PSScriptRoot\workspace_id) { Get-Content $PSScriptRoot\workspace_id } else { Set-Content -Value (Read-Host -Prompt 'Workspace ID') -Path $PSScriptRoot\workspace_id -PassThru | Out-String })
     )
 
-    
-    # Calculate normal working hours for the specified pay period
-    $normal_hours = 0
+    $today = Get-Date
+    $working_date = $Date
     $work_days = 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'
-    if ($Date.Day -ge 1 -and $Date.Day -le 15) {
-        $period_start = 1
-        $from = '{0:yyyy-MM}-01' -f $Date
-        $to = '{0:yyyy-MM-dd}' -f $Date
-
-        for ($x=$period_start; $x -le $Date.Day; $x++) {
-            $day = '{0:yyyy-MM}-{1}' -f $Date, $x
+    $report = @()
+    
+    # Normalize $working_date
+    if ($working_date.Day -gt 1 -and $working_date.Day -le 15) {
+        $working_date = Get-Date $working_date -Day 1
+    } elseif ($working_date.Day -gt 16) {
+        $working_date = Get-Date $working_date -Day 16
+    }
+    
+    while ($working_date -le $today) {
+        $month_first_day = Get-Date $working_date -Day 1
+        $month_last_day = $month_first_day.AddMonths(1).AddDays(-1)
+        
+        # Determine period start and end
+        switch ($working_date.Day) {
+            1 {
+                $period_start = $working_date.Day
+                $period_end = $working_date.AddDays(14).Day
+            }
+            16 {
+                $period_start = $working_date.Day
+                $period_end = $month_last_day.Day
+                if ($month_last_day -gt $today) {
+                    $period_end = $today.Day
+                }
+            }
+            default {throw "Working date out of range: $working_date"}
+        }
+    
+        # Calculate normal working hours for the specified pay period
+        $normal_hours = 0
+        for ($x=$period_start; $x -le $period_end; $x++) {
+            $day = '{0:yyyy-MM}-{1}' -f $working_date, $x
             $day_of_week = (Get-Date $day).DayOfWeek
             
             if ($day_of_week -in $work_days) {
                 $normal_hours += 8
             }
         }
-    } elseif ($Date.Day -ge 16 -and $Date.Day -le 31) {
-        $period_start = 16
-        $from = '{0:yyyy-MM}-16' -f $Date
-        $to = '{0:yyyy-MM-dd}' -f $Date
+    
+        $from = '{0:yyyy-MM}-{1}' -f $working_date, $period_start
+        $to = '{0:yyyy-MM}-{1}' -f $working_date, $period_end
+        $detailed_report = Get-TogglDetailedReport -From $from -To $to
 
-        for ($x=$period_start; $x -le $Date.Day; $x++) {
-            $day = '{0:yyyy-MM}-{1}' -f $Date, $x
-            $day_of_week = (Get-Date $day).DayOfWeek
-            
-            if ($day_of_week -in $work_days) {
-                $normal_hours += 8
-            }
+        $total_hours = ($detailed_report | Measure-Object -Property Hours -Sum).Sum
+        $billable_hours = ($detailed_report.Where{$_.WorkType -eq 'Billable'} | Measure-Object -Property Hours -Sum).Sum
+        if ($billable_hours -eq $null) {
+            $billable_hours = 0
+        }
+        $utilized_hours = ($detailed_report.Where{$_.WorkType -eq 'Utilized'} | Measure-Object -Property Hours -Sum).Sum
+        if ($utilized_hours -eq $null) {
+            $utilized_hours = 0
+        }
+        $pto_hours = ($detailed_report.Where{$_.WorkType -eq 'PTO'} | Measure-Object -Property Hours -Sum).Sum
+        if ($pto_hours -eq $null) {
+            $pto_hours = 0
+        }
+        $holiday_hours = ($detailed_report.Where{$_.WorkType -eq 'Holiday'} | Measure-Object -Property Hours -Sum).Sum
+        if ($holiday_hours -eq $null) {
+            $holiday_hours = 0
+        }
+        $non_billable_hours = ($detailed_report.Where{$_.WorkType -eq 'Non-Billable'} | Measure-Object -Property Hours -Sum).Sum
+        if ($non_billable_hours -eq $null) {
+            $non_billable_hours = 0
+        }
+        $overtime_hours = $total_hours-$normal_hours
+        if ($overtime_hours -lt 0) {
+            $overtime_hours = 0
+        }
+        $percent_billable = ($billable_hours/($normal_hours-$pto_hours-$holiday_hours))*100
+        $percent_utilized = (($billable_hours+$utilized_hours)/($normal_hours-$pto_hours-$holiday_hours))*100
+    
+        # Output summary totals
+        $obj = New-Object -TypeName PSObject
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name PeriodStart -Value ('{0:MM-dd-yyyy}' -f (Get-Date $working_date -Day $period_start))
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name TotalHours -Value ('{0:N2}' -f $total_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name Normal -Value ('{0:N2}' -f $normal_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name Overtime -Value ('{0:N2}' -f $overtime_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name PTO -Value ('{0:N2}' -f $pto_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name Holiday -Value ('{0:N2}' -f $holiday_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name Non-Billable -Value ('{0:N2}' -f $non_billable_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name Utilized -Value ('{0:N2}' -f $utilized_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name Billable -Value ('{0:N2}' -f $billable_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name BillablePercent -Value ('{0:N0}' -f $percent_billable)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name UtilizedPercent -Value ('{0:N0}' -f $percent_utilized)
+        
+        $report += $obj
+        
+        switch ($working_date.Day) {
+            1 {$working_date = $working_date.AddDays(15)}
+            16 {$working_date = Get-Date $working_date.AddMonths(1) -Day 1}
+            default {throw "Working date out of range: $working_date"}
         }
     }
     
-    $detailed_report = Get-TogglDetailedReport -From $from -To $to
-
-    $total_hours = ($detailed_report | Measure-Object -Property Hours -Sum).Sum
-    $billable_hours = ($detailed_report.Where{$_.WorkType -eq 'Billable'} | Measure-Object -Property Hours -Sum).Sum
-    if ($billable_hours -eq $null) {
-        $billable_hours = 0
-    }
-    $utilized_hours = ($detailed_report.Where{$_.WorkType -eq 'Utilized'} | Measure-Object -Property Hours -Sum).Sum
-    if ($utilized_hours -eq $null) {
-        $utilized_hours = 0
-    }
-    $pto_hours = ($detailed_report.Where{$_.WorkType -eq 'PTO'} | Measure-Object -Property Hours -Sum).Sum
-    if ($pto_hours -eq $null) {
-        $pto_hours = 0
-    }
-    $holiday_hours = ($detailed_report.Where{$_.WorkType -eq 'Holiday'} | Measure-Object -Property Hours -Sum).Sum
-    if ($holiday_hours -eq $null) {
-        $holiday_hours = 0
-    }
-    $non_billable_hours = ($detailed_report.Where{$_.WorkType -eq 'Non-Billable'} | Measure-Object -Property Hours -Sum).Sum
-    if ($non_billable_hours -eq $null) {
-        $non_billable_hours = 0
-    }
-    $overtime_hours = $total_hours-$normal_hours
-    if ($overtime_hours -lt 0) {
-        $overtime_hours = 0
-    }
-    $percent_billable = ($billable_hours/($normal_hours-$pto_hours-$holiday_hours))*100
-    $percent_utilized = (($billable_hours+$utilized_hours)/($normal_hours-$pto_hours-$holiday_hours))*100
-    
-    # Output summary totals
-    $obj = New-Object -TypeName PSObject
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name TotalHours -Value ('{0:N2}' -f $total_hours)
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name Normal -Value ('{0:N2}' -f $normal_hours)
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name Overtime -Value ('{0:N2}' -f $overtime_hours)
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name PTO -Value ('{0:N2}' -f $pto_hours)
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name Holiday -Value ('{0:N2}' -f $holiday_hours)
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name Non-Billable -Value ('{0:N2}' -f $non_billable_hours)
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name Utilized -Value ('{0:N2}' -f $utilized_hours)
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name Billable -Value ('{0:N2}' -f $billable_hours)
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name BillablePercent -Value ('{0:N0}' -f $percent_billable)
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name UtilizedPercent -Value ('{0:N0}' -f $percent_utilized)
-    
-    Write-Output $obj
+    Write-Output $report
 }
