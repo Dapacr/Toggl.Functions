@@ -1,11 +1,12 @@
 function Get-TogglDetailedReport {
     [CmdletBinding()]
     Param (
-        [Parameter(Position=0)][Alias('Since')]
-        [datetime]$From = (Get-Date),
+        [Parameter(Mandatory, Position=0)][Alias('Since')]
+        [datetime]$From,
         [Parameter(Position=1)][Alias('Until')]
         [datetime]$To = (Get-Date),
         [string]$Client,
+        [string]$Ticket,
         [string]$Project,
         [string]$Description,
         [string]$UserAgent = $(if (Test-Path $PSScriptRoot\user_agent) { Get-Content $PSScriptRoot\user_agent } else { Set-Content -Value (Read-Host -Prompt 'Email Address') -Path $PSScriptRoot\user_agent -PassThru | Out-String }),
@@ -41,7 +42,7 @@ function Get-TogglDetailedReport {
     
     $report = $report | Select-Object @{n='Date';e={Get-Date $_.start -Format MM/dd/yyyy}},
                                       @{n='Client';e={$_.client}},
-                                      @{n='Ticket';e={$_.project -replace '.*?(\b\d+\b).*','$1'}},
+                                      @{n='Ticket';e={($_.project -replace '(.*?\b(\d+)\b.*|.*)','$2') -replace '$^','n/a'}},
                                       @{n='Description';e={$_.description}},
                                       @{n='Project';e={$_.project -replace '^Ticket\s#\s\d+\s\((.+)\)','$1'}},
                                       @{n='Hours';e={'{0:n2}' -f ($_.dur/1000/60/60)}},
@@ -50,7 +51,10 @@ function Get-TogglDetailedReport {
     if ($Client) {
         $report = $report.Where{$_.Client -match $Client}
     }
-    if ($Project) {
+    if ($Ticket) {
+        $report = $report.Where{$_.Ticket -match $Ticket}
+    }
+        if ($Project) {
         $report = $report.Where{$_.Project -match $Project}
     }
     if ($Description) {
@@ -128,9 +132,7 @@ function Get-TogglUtilizationReport {
             }
         }
         
-        $since = '{0:yyyy-MM}-{1}' -f $From, $period_start
-        $until = '{0:yyyy-MM}-{1}' -f $From, $period_end
-        $detailed_report = Get-TogglDetailedReport -From $since -To $until
+        $detailed_report = Get-TogglDetailedReport -From ('{0:yyyy-MM}-{1}' -f $From, $period_start) -To ('{0:yyyy-MM}-{1}' -f $From, $period_end)
 
         $total_hours = ($detailed_report | Measure-Object -Property Hours -Sum).Sum
         if ($total_hours -eq $null) {
