@@ -9,6 +9,7 @@ function Get-TogglDetailedReport {
         [string]$Ticket,
         [string]$Project,
         [string]$Description,
+        [string]$WorkType,
         [string]$UserAgent = $(if (Test-Path $PSScriptRoot\user_agent) { Get-Content $PSScriptRoot\user_agent } else { Set-Content -Value (Read-Host -Prompt 'Email Address') -Path $PSScriptRoot\user_agent -PassThru | Out-String }),
         [string]$User = $(if (Test-Path $PSScriptRoot\api_token) { Get-Content $PSScriptRoot\api_token } else { $User = Set-Content -Value (Read-Host -Prompt 'API Token') -Path $PSScriptRoot\api_token -PassThru | Out-String }),
         [string]$WorkspaceID = $(if (Test-Path $PSScriptRoot\workspace_id) { Get-Content $PSScriptRoot\workspace_id } else { Set-Content -Value (Read-Host -Prompt 'Workspace ID') -Path $PSScriptRoot\workspace_id -PassThru | Out-String })
@@ -41,12 +42,12 @@ function Get-TogglDetailedReport {
     }
     
     $report = $report | Select-Object @{n='Date';e={Get-Date $_.start -Format MM/dd/yyyy}},
-                                      @{n='Client';e={$_.client}},
-                                      @{n='Ticket';e={($_.project -replace '(.*?\b(\d+)\b.*|.*)','$2') -replace '$^','n/a'}},
-                                      @{n='Description';e={$_.description}},
-                                      @{n='Project';e={$_.project -replace '^Ticket\s#\s\d+\s\((.+)\)','$1'}},
-                                      @{n='Hours';e={'{0:n2}' -f ($_.dur/1000/60/60)}},
-                                      @{n='WorkType';e={$_.tags -as [string]}} | Sort-Object Date
+    @{n='Client';e={$_.client}},
+    @{n='Ticket';e={($_.project -replace '(.*?\b(\d+)\b.*|.*)','$2') -replace '$^','n/a'}},
+    @{n='Description';e={$_.description}},
+    @{n='Project';e={$_.project -replace '^Ticket\s#\s\d+\s\((.+)\)','$1'}},
+    @{n='Hours';e={'{0:n2}' -f ($_.dur/1000/60/60)}},
+    @{n='WorkType';e={$_.tags -as [string]}} | Sort-Object Date
 
     if ($Client) {
         $report = $report.Where{$_.Client -match $Client}
@@ -54,13 +55,16 @@ function Get-TogglDetailedReport {
     if ($Ticket) {
         $report = $report.Where{$_.Ticket -match $Ticket}
     }
-        if ($Project) {
+    if ($Project) {
         $report = $report.Where{$_.Project -match $Project}
     }
     if ($Description) {
         $report = $report.Where{$_.Description -match $Description}
     }
-    
+    if ($WorkType) {
+        $report = $report.Where{$_.WorkType -match $WorkType}
+    }
+        
     Write-Output $report
 }
 
