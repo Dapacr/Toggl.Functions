@@ -65,54 +65,62 @@ function Get-TogglUtilizationReport {
     [CmdletBinding()]
     Param (
         [Parameter(Position=0)]
-        [Alias('Day')]
-        [datetime]$Date = $(if ((Get-Date).Hour -lt 17) { (Get-Date).AddDays(-1) } else { Get-Date }),
+        [datetime]$From = $(if ((Get-Date).Hour -lt 17) { (Get-Date).AddDays(-1) } else { Get-Date }),
+        [Parameter(Position=1)]
+        [datetime]$To = (Get-Date),
+        [switch]$ExcludeCurrentPeriod,
         [string]$UserAgent = $(if (Test-Path $PSScriptRoot\user_agent) { Get-Content $PSScriptRoot\user_agent } else { Set-Content -Value (Read-Host -Prompt 'Email Address') -Path $PSScriptRoot\user_agent -PassThru | Out-String }),
         [string]$User = $(if (Test-Path $PSScriptRoot\api_token) { Get-Content $PSScriptRoot\api_token } else { $User = Set-Content -Value (Read-Host -Prompt 'API Token') -Path $PSScriptRoot\api_token -PassThru | Out-String }),
         [string]$WorkspaceID = $(if (Test-Path $PSScriptRoot\workspace_id) { Get-Content $PSScriptRoot\workspace_id } else { Set-Content -Value (Read-Host -Prompt 'Workspace ID') -Path $PSScriptRoot\workspace_id -PassThru | Out-String })
     )
 
-    $today = Get-Date
-    $working_date = $Date
     $work_days = 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'
     $report = @()
     
-    # Normalize $working_date
-    if ($working_date.Day -gt 1 -and $working_date.Day -le 15) {
-        $working_date = Get-Date $working_date -Day 1
-    } elseif ($working_date.Day -gt 16) {
-        $working_date = Get-Date $working_date -Day 16
+    # Normalize $From
+    if ($From.Day -gt 1 -and $From.Day -le 15) {
+        $From = Get-Date $From -Day 1
+    } elseif ($From.Day -gt 16) {
+        $From = Get-Date $From -Day 16
     }
     
-    while ($working_date -le $today) {
-        $month_first_day = Get-Date $working_date -Day 1
+    if ($ExcludeCurrentPeriod) {
+        if ($To -ge (Get-Date -Day 16)) {
+            $To = Get-Date -Day 15
+        } elseif ($To -ge (Get-Date -Day 1)) {
+            $To = (Get-Date -Day 1).AddDays(-1)
+        }
+    }
+    
+    while ($From -le $To) {
+        $month_first_day = Get-Date $From -Day 1
         $month_last_day = $month_first_day.AddMonths(1).AddDays(-1)
         
         # Determine period start and end
-        switch ($working_date.Day) {
+        switch ($From.Day) {
             1 {
-                $period_start = $working_date.Day
-                if ($working_date.AddDays(14) -gt $today) {
-                    $period_end = $today.Day
+                $period_start = $From.Day
+                if ($From.AddDays(14) -gt $To) {
+                    $period_end = $To.Day
                 } else {
-                    $period_end = $working_date.AddDays(14).Day
+                    $period_end = $From.AddDays(14).Day
                 }
             }
             16 {
-                $period_start = $working_date.Day
-                if ($month_last_day -gt $today) {
-                    $period_end = $today.Day
+                $period_start = $From.Day
+                if ($month_last_day -gt $To) {
+                    $period_end = $To.Day
                 } else {
                     $period_end = $month_last_day.Day
                 }
             }
-            default {throw "Working date out of range: $working_date"}
+            default {throw "Current Date out of range: $From"}
         }
     
         # Calculate normal working hours for the specified pay period
         $normal_hours = 0
         for ($x=$period_start; $x -le $period_end; $x++) {
-            $day = '{0:yyyy-MM}-{1}' -f $working_date, $x
+            $day = '{0:yyyy-MM}-{1}' -f $From, $x
             $day_of_week = (Get-Date $day).DayOfWeek
             
             if ($day_of_week -in $work_days) {
@@ -120,9 +128,9 @@ function Get-TogglUtilizationReport {
             }
         }
         
-        $from = '{0:yyyy-MM}-{1}' -f $working_date, $period_start
-        $to = '{0:yyyy-MM}-{1}' -f $working_date, $period_end
-        $detailed_report = Get-TogglDetailedReport -From $from -To $to
+        $since = '{0:yyyy-MM}-{1}' -f $From, $period_start
+        $until = '{0:yyyy-MM}-{1}' -f $From, $period_end
+        $detailed_report = Get-TogglDetailedReport -From $since -To $until
 
         $total_hours = ($detailed_report | Measure-Object -Property Hours -Sum).Sum
         if ($total_hours -eq $null) {
@@ -161,7 +169,7 @@ function Get-TogglUtilizationReport {
         }
         # Output summary totals
         $obj = New-Object -TypeName PSObject
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name PeriodStart -Value ('{0:MM-dd-yyyy}' -f (Get-Date $working_date -Day $period_start))
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name PeriodStart -Value ('{0:MM-dd-yyyy}' -f (Get-Date $From -Day $period_start))
         Add-Member -InputObject $obj -MemberType NoteProperty -Name TotalHours -Value ('{0:N2}' -f $total_hours)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name Normal -Value ('{0:N2}' -f $normal_hours)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name Overtime -Value ('{0:N2}' -f $overtime_hours)
@@ -175,10 +183,10 @@ function Get-TogglUtilizationReport {
         
         $report += $obj
         
-        switch ($working_date.Day) {
-            1 {$working_date = $working_date.AddDays(15)}
-            16 {$working_date = Get-Date $working_date.AddMonths(1) -Day 1}
-            default {throw "Working date out of range: $working_date"}
+        switch ($From.Day) {
+            1 {$From = $From.AddDays(15)}
+            16 {$From = Get-Date $From.AddMonths(1) -Day 1}
+            default {throw "Current date out of range: $From"}
         }
     }
     
