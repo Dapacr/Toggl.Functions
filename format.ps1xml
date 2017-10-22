@@ -13,23 +13,32 @@
             </TableColumnHeader>
             <TableColumnHeader>
                 <Width>10</Width>
+                <Alignment>Right</Alignment>
             </TableColumnHeader>
             <TableColumnHeader>
                 <Width>11</Width>
+                <Alignment>Right</Alignment>
             </TableColumnHeader>
             <TableColumnHeader>
                 <Width>13</Width>
+                <Alignment>Right</Alignment>
             </TableColumnHeader>
             <TableColumnHeader>
                 <Width>13</Width>
+                <Alignment>Right</Alignment>
             </TableColumnHeader>
             <TableColumnHeader>
                 <Width>13</Width>
+                <Alignment>Right</Alignment>
             </TableColumnHeader>
             <TableColumnHeader>
                 <Width>11</Width>
+                <Alignment>Right</Alignment>
             </TableColumnHeader>
-            <TableColumnHeader/>
+            <TableColumnHeader>
+                <Width>11</Width>
+                <Alignment>Right</Alignment>
+            </TableColumnHeader>
         </TableHeaders>
         <TableRowEntries>
             <TableRowEntry>
