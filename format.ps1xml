@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+<ViewDefinitions>
+<View>
+    <Name>Toggl.Report.Utilization</Name>
+    <ViewSelectedBy>
+        <TypeName>Toggl.Report.Utilization</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+        <TableHeaders>
+            <TableColumnHeader>
+                <Width>16</Width>
+            </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>16</Width>
+            </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>16</Width>
+            </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>16</Width>
+            </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>16</Width>
+            </TableColumnHeader>
+            <TableColumnHeader/>
+        </TableHeaders>
+        <TableRowEntries>
+            <TableRowEntry>
+                <TableColumnItems>
+                    <TableColumnItem>
+                        <PropertyName>PeriodStart</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Total(Hrs)</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Normal(Hrs)</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Overtime(Hrs)</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Billable(%)</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Utilized(%)</PropertyName>
+                    </TableColumnItem>
+                </TableColumnItems>
+            </TableRowEntry>
+        </TableRowEntries>
+    </TableControl>
+</View>
+<View>
+    <Name>Toggl.Report.Detailed</Name>
+    <ViewSelectedBy>
+        <TypeName>Toggl.Report.Detailed</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+        <TableHeaders>
+            <TableColumnHeader>
+                <Width>16</Width>
+            </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>16</Width>
+            </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>16</Width>
+            </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>16</Width>
+            </TableColumnHeader>
+            <TableColumnHeader/>
+        </TableHeaders>
+        <TableRowEntries>
+            <TableRowEntry>
+                <TableColumnItems>
+                    <TableColumnItem>
+                        <PropertyName>Date</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Client</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Ticket</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Project</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Description</PropertyName>
+                    </TableColumnItem>
+                </TableColumnItems>
+            </TableRowEntry>
+        </TableRowEntries>
+    </TableControl>
+</View>
+</ViewDefinitions>
+</Configuration>

@@ -31,7 +31,7 @@ function Get-TogglDetailedReport {
     $response_total = $toggl_response.total_count
     $page_num = 1
     $report = @()
-
+    
     while ($response_total -gt 0) {
         $toggl_response = Invoke-RestMethod -Uri ($uri_report + '&page=' + $page_num) -Headers $headers -ContentType $content_type
         $TogglResponseData = $toggl_response.data
@@ -42,13 +42,13 @@ function Get-TogglDetailedReport {
     }
     
     $report = $report | Select-Object @{n='Date';e={Get-Date $_.start -Format MM/dd/yyyy}},
-    @{n='Client';e={$_.client}},
-    @{n='Ticket';e={($_.project -replace '(.*?\b(\d+)\b.*|.*)','$2') -replace '$^','n/a'}},
-    @{n='Description';e={$_.description}},
-    @{n='Project';e={$_.project -replace '^Ticket\s#\s\d+\s\((.+)\)','$1'}},
-    @{n='Hours';e={'{0:n2}' -f ($_.dur/1000/60/60)}},
-    @{n='WorkType';e={$_.tags -as [string]}} | Sort-Object Date
-
+                                      @{n='Client';e={$_.client}},
+                                      @{n='Ticket';e={($_.project -replace '(.*?\b(\d+)\b.*|.*)','$2') -replace '$^','n/a'}},
+                                      @{n='Description';e={$_.description}},
+                                      @{n='Project';e={$_.project -replace '^Ticket\s#\s\d+\s\((.+)\)','$1'}},
+                                      @{n='Duration(Hrs)';e={'{0:n2}' -f ($_.dur/1000/60/60)}},
+                                      @{n='WorkType';e={$_.tags -as [string]}} | Sort-Object Date
+    
     if ($Client) {
         $report = $report.Where{$_.Client -match $Client}
     }
@@ -63,6 +63,11 @@ function Get-TogglDetailedReport {
     }
     if ($WorkType) {
         $report = $report.Where{$_.WorkType -match $WorkType}
+    }
+
+    # Insert custom TypeName (defined in $PSScriptRoot\format.ps1xml) to control default display
+    foreach ($item in $report) {
+        $item.PSTypeNames.Insert(0,'Toggl.Report.Detailed')
     }
         
     Write-Output $report
@@ -138,27 +143,27 @@ function Get-TogglUtilizationReport {
         
         $detailed_report = Get-TogglDetailedReport -From ('{0:yyyy-MM}-{1}' -f $From, $period_start) -To ('{0:yyyy-MM}-{1}' -f $From, $period_end)
 
-        $total_hours = ($detailed_report | Measure-Object -Property Hours -Sum).Sum
+        $total_hours = ($detailed_report | Measure-Object -Property 'Duration(Hrs)' -Sum).Sum
         if ($total_hours -eq $null) {
             $total_hours = 0
         }
-        $billable_hours = ($detailed_report.Where{$_.WorkType -eq 'Billable'} | Measure-Object -Property Hours -Sum).Sum
+        $billable_hours = ($detailed_report.Where{$_.WorkType -eq 'Billable'} | Measure-Object -Property 'Duration(Hrs)' -Sum).Sum
         if ($billable_hours -eq $null) {
             $billable_hours = 0
         }
-        $utilized_hours = ($detailed_report.Where{$_.WorkType -eq 'Utilized'} | Measure-Object -Property Hours -Sum).Sum
+        $utilized_hours = ($detailed_report.Where{$_.WorkType -eq 'Utilized'} | Measure-Object -Property 'Duration(Hrs)' -Sum).Sum
         if ($utilized_hours -eq $null) {
             $utilized_hours = 0
         }
-        $pto_hours = ($detailed_report.Where{$_.WorkType -eq 'PTO'} | Measure-Object -Property Hours -Sum).Sum
+        $pto_hours = ($detailed_report.Where{$_.WorkType -eq 'PTO'} | Measure-Object -Property 'Duration(Hrs)' -Sum).Sum
         if ($pto_hours -eq $null) {
             $pto_hours = 0
         }
-        $holiday_hours = ($detailed_report.Where{$_.WorkType -eq 'Holiday'} | Measure-Object -Property Hours -Sum).Sum
+        $holiday_hours = ($detailed_report.Where{$_.WorkType -eq 'Holiday'} | Measure-Object -Property 'Duration(Hrs)' -Sum).Sum
         if ($holiday_hours -eq $null) {
             $holiday_hours = 0
         }
-        $non_billable_hours = ($detailed_report.Where{$_.WorkType -eq 'Non-Billable'} | Measure-Object -Property Hours -Sum).Sum
+        $non_billable_hours = ($detailed_report.Where{$_.WorkType -eq 'Non-Billable'} | Measure-Object -Property 'Duration(Hrs)' -Sum).Sum
         if ($non_billable_hours -eq $null) {
             $non_billable_hours = 0
         }
@@ -175,18 +180,22 @@ function Get-TogglUtilizationReport {
         }
         # Output summary totals
         $obj = New-Object -TypeName PSObject
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name PeriodStart -Value ('{0:MM-dd-yyyy}' -f (Get-Date $From -Day $period_start))
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name TotalHours -Value ('{0:N2}' -f $total_hours)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name Normal -Value ('{0:N2}' -f $normal_hours)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name Overtime -Value ('{0:N2}' -f $overtime_hours)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name PTO -Value ('{0:N2}' -f $pto_hours)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name Holiday -Value ('{0:N2}' -f $holiday_hours)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name Non-Billable -Value ('{0:N2}' -f $non_billable_hours)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name Utilized -Value ('{0:N2}' -f $utilized_hours)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name Billable -Value ('{0:N2}' -f $billable_hours)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name BillablePercent -Value ('{0:N0}' -f $percent_billable)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name UtilizedPercent -Value ('{0:N0}' -f $percent_utilized)
         
+        # Insert custom TypeName (defined in $PSScriptRoot\format.ps1xml) to control default display
+        $obj.PSTypeNames.Insert(0,'Toggl.Report.Utilization')
+        
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name PeriodStart -Value ('{0:MM-dd-yyyy}' -f (Get-Date $From -Day $period_start))
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Total(Hrs)' -Value ('{0:N2}' -f $total_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Normal(Hrs)' -Value ('{0:N2}' -f $normal_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Overtime(Hrs)' -Value ('{0:N2}' -f $overtime_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'PTO(Hrs)' -Value ('{0:N2}' -f $pto_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Holiday(Hrs)' -Value ('{0:N2}' -f $holiday_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Non-Billable(Hrs)' -Value ('{0:N2}' -f $non_billable_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Utilized(Hrs)' -Value ('{0:N2}' -f $utilized_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Billable(Hrs)' -Value ('{0:N2}' -f $billable_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Billable(%)' -Value ('{0:N0}' -f $percent_billable)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Utilized(%)' -Value ('{0:N0}' -f $percent_utilized)
+
         $report += $obj
         
         switch ($From.Day) {
@@ -198,3 +207,6 @@ function Get-TogglUtilizationReport {
     
     Write-Output $report
 }
+
+
+Update-FormatData -PrependPath $PSScriptRoot\format.ps1xml
