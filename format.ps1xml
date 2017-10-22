@@ -23,6 +23,12 @@
             <TableColumnHeader>
                 <Width>16</Width>
             </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>16</Width>
+            </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>16</Width>
+            </TableColumnHeader>
             <TableColumnHeader/>
         </TableHeaders>
         <TableRowEntries>
@@ -39,6 +45,12 @@
                     </TableColumnItem>
                     <TableColumnItem>
                         <PropertyName>Overtime(hrs)</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Billable(hrs)</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Utilized(hrs)</PropertyName>
                     </TableColumnItem>
                     <TableColumnItem>
                         <PropertyName>Billable(%)</PropertyName>
@@ -59,16 +71,16 @@
     <TableControl>
         <TableHeaders>
             <TableColumnHeader>
-                <Width>16</Width>
+                <Width>10</Width>
             </TableColumnHeader>
             <TableColumnHeader>
-                <Width>16</Width>
+                <Width>12</Width>
             </TableColumnHeader>
             <TableColumnHeader>
-                <Width>16</Width>
+                <Width>6</Width>
             </TableColumnHeader>
             <TableColumnHeader>
-                <Width>16</Width>
+                <Width>20</Width>
             </TableColumnHeader>
             <TableColumnHeader/>
         </TableHeaders>
