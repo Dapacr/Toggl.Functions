@@ -46,7 +46,7 @@ function Get-TogglDetailedReport {
                                       @{n='Ticket';e={($_.project -replace '(.*?\b(\d+)\b.*|.*)','$2') -replace '$^','n/a'}},
                                       @{n='Description';e={$_.description}},
                                       @{n='Project';e={$_.project -replace '^Ticket\s#\s\d+\s\((.+)\)','$1'}},
-                                      @{n='Duration(Hrs)';e={'{0:n2}' -f ($_.dur/1000/60/60)}},
+                                      @{n='Duration(hrs)';e={'{0:n2}' -f ($_.dur/1000/60/60)}},
                                       @{n='WorkType';e={$_.tags -as [string]}} | Sort-Object Date
     
     if ($Client) {
@@ -185,14 +185,14 @@ function Get-TogglUtilizationReport {
         $obj.PSTypeNames.Insert(0,'Toggl.Report.Utilization')
         
         Add-Member -InputObject $obj -MemberType NoteProperty -Name PeriodStart -Value ('{0:MM-dd-yyyy}' -f (Get-Date $From -Day $period_start))
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Total(Hrs)' -Value ('{0:N2}' -f $total_hours)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Normal(Hrs)' -Value ('{0:N2}' -f $normal_hours)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Overtime(Hrs)' -Value ('{0:N2}' -f $overtime_hours)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'PTO(Hrs)' -Value ('{0:N2}' -f $pto_hours)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Holiday(Hrs)' -Value ('{0:N2}' -f $holiday_hours)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Non-Billable(Hrs)' -Value ('{0:N2}' -f $non_billable_hours)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Utilized(Hrs)' -Value ('{0:N2}' -f $utilized_hours)
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Billable(Hrs)' -Value ('{0:N2}' -f $billable_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Total(hrs)' -Value ('{0:N2}' -f $total_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Normal(hrs)' -Value ('{0:N2}' -f $normal_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Overtime(hrs)' -Value ('{0:N2}' -f $overtime_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'PTO(hrs)' -Value ('{0:N2}' -f $pto_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Holiday(hrs)' -Value ('{0:N2}' -f $holiday_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Non-Billable(hrs)' -Value ('{0:N2}' -f $non_billable_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Utilized(hrs)' -Value ('{0:N2}' -f $utilized_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Billable(hrs)' -Value ('{0:N2}' -f $billable_hours)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Billable(%)' -Value ('{0:N0}' -f $percent_billable)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Utilized(%)' -Value ('{0:N0}' -f $percent_utilized)
 

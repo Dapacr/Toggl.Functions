@@ -32,13 +32,13 @@
                         <PropertyName>PeriodStart</PropertyName>
                     </TableColumnItem>
                     <TableColumnItem>
-                        <PropertyName>Total(Hrs)</PropertyName>
+                        <PropertyName>Total(hrs)</PropertyName>
                     </TableColumnItem>
                     <TableColumnItem>
-                        <PropertyName>Normal(Hrs)</PropertyName>
+                        <PropertyName>Normal(hrs)</PropertyName>
                     </TableColumnItem>
                     <TableColumnItem>
-                        <PropertyName>Overtime(Hrs)</PropertyName>
+                        <PropertyName>Overtime(hrs)</PropertyName>
                     </TableColumnItem>
                     <TableColumnItem>
                         <PropertyName>Billable(%)</PropertyName>
