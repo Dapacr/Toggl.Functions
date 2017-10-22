@@ -9,25 +9,25 @@
     <TableControl>
         <TableHeaders>
             <TableColumnHeader>
-                <Width>16</Width>
+                <Width>11</Width>
             </TableColumnHeader>
             <TableColumnHeader>
-                <Width>16</Width>
+                <Width>10</Width>
             </TableColumnHeader>
             <TableColumnHeader>
-                <Width>16</Width>
+                <Width>11</Width>
             </TableColumnHeader>
             <TableColumnHeader>
-                <Width>16</Width>
+                <Width>13</Width>
             </TableColumnHeader>
             <TableColumnHeader>
-                <Width>16</Width>
+                <Width>13</Width>
             </TableColumnHeader>
             <TableColumnHeader>
-                <Width>16</Width>
+                <Width>13</Width>
             </TableColumnHeader>
             <TableColumnHeader>
-                <Width>16</Width>
+                <Width>11</Width>
             </TableColumnHeader>
             <TableColumnHeader/>
         </TableHeaders>
