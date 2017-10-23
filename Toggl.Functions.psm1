@@ -41,7 +41,7 @@ function Get-TogglDetailedReport {
         $page_num++
     }
     
-    $report = $report | Select-Object @{n='Date';e={Get-Date $_.start -Format MM/dd/yyyy}},
+    $report = $report | Select-Object @{n='Date';e={Get-Date $_.start -Format yyyy-MM-dd}},
                                       @{n='Client';e={$_.client}},
                                       @{n='Ticket';e={($_.project -replace '(.*?\b(\d+)\b.*|.*)','$2') -replace '$^','n/a'}},
                                       @{n='Description';e={$_.description}},
@@ -184,7 +184,7 @@ function Get-TogglUtilizationReport {
         # Insert custom TypeName (defined in $PSScriptRoot\format.ps1xml) to control default display
         $obj.PSTypeNames.Insert(0,'Toggl.Report.Utilization')
         
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name PeriodStart -Value ('{0:MM-dd-yyyy}' -f (Get-Date $From -Day $period_start))
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name PeriodStart -Value ('{0:yyyy-MM-dd}' -f (Get-Date $From -Day $period_start))
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Total(hrs)' -Value ('{0:N2}' -f $total_hours)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Normal(hrs)' -Value ('{0:N2}' -f $normal_hours)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Overtime(hrs)' -Value ('{0:N2}' -f $overtime_hours)
