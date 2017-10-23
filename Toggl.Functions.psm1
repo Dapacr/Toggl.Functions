@@ -66,8 +66,8 @@ function Get-TogglDetailedReport {
     }
 
     # Insert custom TypeName (defined in $PSScriptRoot\format.ps1xml) to control default display
-    foreach ($item in $report) {
-        $item.PSTypeNames.Insert(0,'Toggl.Report.Detailed')
+    foreach ($obj in $report) {
+        $obj.PSTypeNames.Insert(0,'Toggl.Report.Detailed')
     }
         
     Write-Output $report
