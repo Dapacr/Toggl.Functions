@@ -1,3 +1,21 @@
+<#
+        .Synopsis
+        Returns report data for the specified date range.
+        .Description
+        This cmdlet uses the tag functionality to classify time entries.
+        
+        The following tags are used:
+        
+            Billable
+            Holiday
+            Non-Billable
+            PTO
+            Training
+            Utilized
+
+        .Link
+        https://github.com/Dapacruz/VMware.VimAutomation.Custom
+#>
 function Get-TogglDetailedReport {
     [CmdletBinding()]
     Param (
@@ -74,6 +92,24 @@ function Get-TogglDetailedReport {
 }
 
 
+<#
+        .Synopsis
+        Calculate a utilization report for all pay periods in the specified date range.
+        .Description
+        This cmdlet uses the tag functionality to classify time entries.
+        
+        The following tags are used:
+        
+            Billable
+            Holiday
+            Non-Billable
+            PTO
+            Training
+            Utilized
+
+        .Link
+        https://github.com/Dapacruz/VMware.VimAutomation.Custom
+#>
 function Get-TogglUtilizationReport {
     [CmdletBinding()]
     Param (
@@ -155,6 +191,10 @@ function Get-TogglUtilizationReport {
         if ($utilized_hours -eq $null) {
             $utilized_hours = 0
         }
+        $training_hours = ($detailed_report.Where{$_.WorkType -eq 'Training'} | Measure-Object -Property 'Duration(Hrs)' -Sum).Sum
+        if ($training_hours -eq $null) {
+            $training_hours = 0
+        }
         $pto_hours = ($detailed_report.Where{$_.WorkType -eq 'PTO'} | Measure-Object -Property 'Duration(Hrs)' -Sum).Sum
         if ($pto_hours -eq $null) {
             $pto_hours = 0
@@ -172,8 +212,8 @@ function Get-TogglUtilizationReport {
             $overtime_hours = 0
         }
         if ($normal_hours -gt 0) {
-            $percent_billable = ($billable_hours/($normal_hours-$pto_hours-$holiday_hours))*100
-            $percent_utilized = (($billable_hours+$utilized_hours)/($normal_hours-$pto_hours-$holiday_hours))*100
+            $percent_billable = ($billable_hours/($normal_hours-$pto_hours-$holiday_hours-$training_hours))*100
+            $percent_utilized = (($billable_hours+$utilized_hours)/($normal_hours-$pto_hours-$holiday_hours-$training_hours))*100
         } else {
             $percent_billable = 0
             $percent_utilized = 0
@@ -188,6 +228,7 @@ function Get-TogglUtilizationReport {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Total(hrs)' -Value ('{0:N2}' -f $total_hours)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Normal(hrs)' -Value ('{0:N2}' -f $normal_hours)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Overtime(hrs)' -Value ('{0:N2}' -f $overtime_hours)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Training(hrs)' -Value ('{0:N2}' -f $training_hours)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'PTO(hrs)' -Value ('{0:N2}' -f $pto_hours)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Holiday(hrs)' -Value ('{0:N2}' -f $holiday_hours)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Non-Billable(hrs)' -Value ('{0:N2}' -f $non_billable_hours)
