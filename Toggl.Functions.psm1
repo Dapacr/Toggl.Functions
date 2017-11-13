@@ -2,7 +2,7 @@
         .Synopsis
         Returns report data for the specified date range.
         .Description
-        This cmdlet uses the tag functionality to classify time entries.
+        This cmdlet uses Toggl's tag functionality to classify time entries.
         
         The following tags are used:
         
@@ -96,7 +96,7 @@ function Get-TogglDetailedReport {
         .Synopsis
         Calculate a utilization report for all pay periods in the specified date range.
         .Description
-        This cmdlet uses the tag functionality to classify time entries.
+        This cmdlet uses Toggl's tag functionality to classify time entries.
         
         The following tags are used:
         
