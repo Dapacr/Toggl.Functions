@@ -146,9 +146,9 @@ function Get-TogglUtilizationReport {
         $month_last_day = $month_first_day.AddMonths(1).AddDays(-1)
         
         # Determine period start and end
-        switch ($From.Day) {
+        $period_start = $From.Day
+        switch ($period_start) {
             1 {
-                $period_start = $From.Day
                 if ($From.AddDays(14) -gt $To) {
                     $period_end = $To.Day
                 } else {
@@ -156,7 +156,6 @@ function Get-TogglUtilizationReport {
                 }
             }
             16 {
-                $period_start = $From.Day
                 if ($month_last_day -gt $To) {
                     $period_end = $To.Day
                 } else {
