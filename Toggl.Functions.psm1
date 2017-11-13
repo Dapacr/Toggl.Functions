@@ -63,7 +63,7 @@ function Get-TogglDetailedReport {
                                       @{n='Client';e={$_.client}},
                                       @{n='Ticket';e={($_.project -replace '(.*?\b(\d+)\b.*|.*)','$2') -replace '$^','n/a'}},
                                       @{n='Description';e={$_.description}},
-                                      @{n='Project';e={$_.project -replace '^Ticket\s#\s\d+\s\((.+)\)','$1'}},
+                                      @{n='Project';e={$_.project -replace '^Ticket\s?#\s?\d+\s\((.+)\)','$1'}},
                                       @{n='Duration(hrs)';e={'{0:n2}' -f ($_.dur/1000/60/60)}},
                                       @{n='WorkType';e={$_.tags -as [string]}} | Sort-Object Date
     
