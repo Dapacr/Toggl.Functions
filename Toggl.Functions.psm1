@@ -134,9 +134,9 @@ function Get-TogglUtilizationReport {
     }
     
     if ($ExcludeCurrentPeriod) {
-        if ($To -ge (Get-Date -Day 16)) {
+        if ($To.Date -ge (Get-Date -Day 16).Date) {
             $To = Get-Date -Day 15
-        } elseif ($To -ge (Get-Date -Day 1)) {
+        } elseif ($To.Date -ge (Get-Date -Day 1).Date) {
             $To = (Get-Date -Day 1).AddDays(-1)
         }
     }
@@ -144,6 +144,15 @@ function Get-TogglUtilizationReport {
     while ($From -le $To) {
         $month_first_day = Get-Date $From -Day 1
         $month_last_day = $month_first_day.AddMonths(1).AddDays(-1)
+        $normal_hours = 0
+        $total_hours = 0
+        $billable_hours = 0
+        $utilized_hours = 0
+        $training_hours = 0
+        $pto_hours = 0
+        $holiday_hours = 0
+        $non_billable_hours = 0
+        $overtime_hours = 0
         
         # Determine period start and end
         $period_start = $From.Day
@@ -166,7 +175,6 @@ function Get-TogglUtilizationReport {
         }
     
         # Calculate normal working hours for the specified pay period
-        $normal_hours = 0
         for ($x=$period_start; $x -le $period_end; $x++) {
             $day = '{0:yyyy-MM}-{1}' -f $From, $x
             $day_of_week = (Get-Date $day).DayOfWeek
@@ -176,7 +184,7 @@ function Get-TogglUtilizationReport {
             }
         }
         
-        $detailed_report = Get-TogglDetailedReport -From ('{0:yyyy-MM}-{1}' -f $From, $period_start) -To ('{0:yyyy-MM}-{1}' -f $From, $period_end)
+        [system.array]$detailed_report = Get-TogglDetailedReport -From ('{0:yyyy-MM}-{1}' -f $From, $period_start) -To ('{0:yyyy-MM}-{1}' -f $From, $period_end)
 
         $total_hours = ($detailed_report | Measure-Object -Property 'Duration(Hrs)' -Sum).Sum
         if ($total_hours -eq $null) {
