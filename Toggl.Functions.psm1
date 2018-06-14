@@ -19,8 +19,8 @@
 function Get-TogglDetailedReport {
     [CmdletBinding()]
     Param (
-        [Parameter(Mandatory, Position=0)][Alias('Since')]
-        [datetime]$From,
+        [Parameter(Position=0)][Alias('Since')]
+        [datetime]$From = (Get-Date).AddMonths(-12),
         [Parameter(Position=1)][Alias('Until')]
         [datetime]$To = (Get-Date),
         [string]$Client,
