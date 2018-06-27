@@ -154,7 +154,7 @@
             <TableRowEntry>
                 <TableColumnItems>
                     <TableColumnItem>
-                        <PropertyName>Period</PropertyName>
+                        <PropertyName>Month</PropertyName>
                     </TableColumnItem>
                     <TableColumnItem>
                         <PropertyName>Billable(hrs)</PropertyName>
