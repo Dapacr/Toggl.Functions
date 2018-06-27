@@ -284,10 +284,10 @@ function Get-TogglMonthlyHoursReport {
             $training_hrs = $period.Group.'Training(hrs)' | Measure-Object -Sum | Select-Object -ExpandProperty Sum
             
             Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Month'  -Value "$month-$year"
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Billable(hrs)' -Value $billable_hrs
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name 'PTO(hrs)' -Value $pto_hrs
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Training(hrs)' -Value $training_hrs
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Total(hrs)' -Value ($billable_hrs+$pto_hrs+$training_hrs)
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Billable(hrs)' -Value ('{0:N2}' -f $billable_hrs)
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name 'PTO(hrs)' -Value ('{0:N2}' -f $pto_hrs)
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Training(hrs)' -Value ('{0:N2}' -f $training_hrs)
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Total(hrs)' -Value ('{0:N2}' -f ($billable_hrs + $pto_hrs + $training_hrs))
             
             $report += $obj
         }
