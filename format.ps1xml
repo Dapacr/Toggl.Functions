@@ -123,5 +123,55 @@
         </TableRowEntries>
     </TableControl>
 </View>
+<View>
+    <Name>Toggl.Report.Monthly.Hours</Name>
+    <ViewSelectedBy>
+        <TypeName>Toggl.Report.Monthly.Hours</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+        <TableHeaders>
+            <TableColumnHeader>
+                <Width>7</Width>
+            </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>13</Width>
+                <Alignment>Right</Alignment>
+            </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>8</Width>
+                <Alignment>Right</Alignment>
+            </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>13</Width>
+                <Alignment>Right</Alignment>
+            </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>10</Width>
+                <Alignment>Right</Alignment>
+            </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+            <TableRowEntry>
+                <TableColumnItems>
+                    <TableColumnItem>
+                        <PropertyName>Period</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Billable(hrs)</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>PTO(hrs)</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Training(hrs)</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Total(hrs)</PropertyName>
+                    </TableColumnItem>
+                </TableColumnItems>
+            </TableRowEntry>
+        </TableRowEntries>
+    </TableControl>
+</View>
 </ViewDefinitions>
 </Configuration>
