@@ -3,18 +3,24 @@
         Calculate a utilization report for all pay periods in the specified date range.
         .Description
         This cmdlet uses Toggl's tag functionality to classify time entries.
-        
         The following tags are used:
-        
             Billable
             Holiday
             Non-Billable
             PTO
             Training
             Utilized
-
+        .Example
+        Get-TogglUtilizationReport
+        Generate a utilization report for the current pay period
+        .Example
+        Get-TogglUtilizationReport -From (Get-Date).AddMonths(-12) -ExcludeCurrentPeriod | Export-Csv -NoTypeInformation 'c:\temp\TogglUtilizationReport.csv'
+        Generate a utilization report for the past year, excluding the current pay period, and outputs to a CSV file
+        .Example
+        Get-TogglUtilizationReport -From (Get-Date).AddMonths(-12) -ExcludeCurrentPeriod | Out-GridView
+        Generate a utilization report for the past year, excluding the current pay period, and outputs to grid view
         .Link
-        https://github.com/Dapacruz/VMware.VimAutomation.Custom
+        https://github.com/Dapacruz/Toggl.Functions
 #>
 function Get-TogglUtilizationReport {
     [CmdletBinding()]
