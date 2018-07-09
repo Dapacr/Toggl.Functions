@@ -1,3 +1,18 @@
+<#
+        .Synopsis
+        Calculate a monthly billable hours report in the specified date range.
+        .Example
+        Get-TogglMonthlyHoursReport | Export-Csv -NoTypeInformation 'c:\temp\TogglMonthlyBillableHoursReport.csv'
+        Calculate monthly billable hours for the past year, covert to CSV and copy to the clipboard. Can be pasted into Excel directly
+        .Example
+        Get-TogglMonthlyHoursReport | Out-GridView
+        Calculate monthly billable hours for the past year and output to grid view
+        .Example
+        Get-TogglMonthlyHoursReport | ConvertTo-Csv -NoTypeInformation -Delimiter "`t" | clip
+        Calculate monthly billable hours, covert to CSV and copy to the clipboard. Can be pasted directly into Excel
+        .Link
+        https://github.com/Dapacruz/Toggl.Functions
+#>
 function Get-TogglMonthlyHoursReport {
     [CmdletBinding()]
     Param (

@@ -3,18 +3,27 @@
         Returns report data for the specified date range.
         .Description
         This cmdlet uses Toggl's tag functionality to classify time entries.
-        
         The following tags are used:
-        
             Billable
             Holiday
             Non-Billable
             PTO
             Training
             Utilized
-
+        .Example
+        Get-TogglDetailedReport -From 1/1 -Client Acme
+        Generate a detailed report, for client Acme, from 1/1 of the current year to today
+        .Example
+        Get-TogglDetailedReport -From 1/1 -To 3/1 -Ticket 232641
+        Generate a detailed report, for ticket # 232641, from 1/1 of the current year to 3/1
+        .Example
+        Get-TogglDetailedReport -From 1/1 -To (Get-Date 1/1).AddMonths(1) -WorkType Billable | measure 'Duration(hrs)' -Sum
+        Calculate the number of billable hours for a particular period
+        .Example
+        Get-TogglDetailedReport -Ticket 232641 -WorkType Billable | measure 'Duration(hrs)' -Sum
+        Calculate the number of billable hours for a particular project
         .Link
-        https://github.com/Dapacruz/VMware.VimAutomation.Custom
+        https://github.com/Dapacruz/Toggl.Functions
 #>
 function Get-TogglDetailedReport {
     [CmdletBinding()]
