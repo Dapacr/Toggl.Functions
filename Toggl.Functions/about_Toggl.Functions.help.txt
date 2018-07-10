@@ -2,7 +2,7 @@ TOPIC
     Toggl.Functions
 
 SHORT DESCRIPTION
-    Helper functions for the Toggl API.
+    Utility functions for generating reports using the Toggl API.
 
 LONG DESCRIPTION
     Discuss what the "primary" commands are in your module especially if
