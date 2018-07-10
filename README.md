@@ -18,7 +18,7 @@ Installation
 PS> Install-Module -Name Toggl.Functions
 
 **PowerShell Gallery Inspect**<br />
-PS> Save-Module -Name Toggl.Functions -Path <path>
+PS> Save-Module -Name Toggl.Functions -Path \<path\> -RequiredVersion 0.0.1
 
 **Manual Install**<br />
 Download, unzip and copy the Toggl.Functions subfolder to $home\Documents\WindowsPowerShell\Modules\
