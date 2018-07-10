@@ -1,13 +1,13 @@
 # Toggl.Functions
 *Utility functions for generating reports using the Toggl API*
 
-**Get-TogglDetailedReport**
+**Get-TogglDetailedReport**<br />
 Returns report data for the specified date range
 
-**Get-TogglUtilizationReport**
+**Get-TogglUtilizationReport**<br />
 Calculate a utilization report for all pay periods in the specified date range
 
-**Get-TogglMonthlyHoursReport**
+**Get-TogglMonthlyHoursReport**<br />
 Calculate a monthly billable hours report in the specified date range
 
 <br />
@@ -18,7 +18,7 @@ Installation
 PS> Install-Module -Name Toggl.Functions
 
 **PowerShell Gallery Inspect**<br />
-PS> Save-Module -Name Toggl.Functions -Path <path>
+PS> Save-Module -Name Toggl.Functions -Path \<path\> -RequiredVersion 0.0.1
 
 **Manual Install**<br />
 Download, unzip and copy the Toggl.Functions subfolder to $home\Documents\WindowsPowerShell\Modules\
