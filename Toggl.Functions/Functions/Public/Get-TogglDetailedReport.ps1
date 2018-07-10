@@ -113,19 +113,19 @@ function Get-TogglDetailedReport {
                                         @{n='WorkType';e={$_.tags -as [string]}} | Sort-Object Date
         
         if ($Client) {
-            $report = $report.Where{$_.Client -match $Client}
+            $report = $report.Where{$_.Client -like $Client}
         }
         if ($Ticket) {
-            $report = $report.Where{$_.Ticket -match $Ticket}
+            $report = $report.Where{$_.Ticket -like $Ticket}
         }
         if ($Project) {
-            $report = $report.Where{$_.Project -match $Project}
+            $report = $report.Where{$_.Project -like $Project}
         }
         if ($Description) {
-            $report = $report.Where{$_.Description -match $Description}
+            $report = $report.Where{$_.Description -like $Description}
         }
         if ($WorkType) {
-            $report = $report.Where{$_.WorkType -match $WorkType}
+            $report = $report.Where{$_.WorkType -like $WorkType}
         }
 
         # Insert custom TypeName (defined in $PSScriptRoot\format.ps1xml) to control default display
