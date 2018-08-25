@@ -113,8 +113,8 @@ function Get-TogglUtilizationReport {
             $overtime_hours = 0
         }
         if ($normal_hours -gt 0) {
-            $percent_billable = ($billable_hours/($normal_hours-$pto_hours-$holiday_hours-$training_hours))*100
-            $percent_utilized = (($billable_hours+$utilized_hours)/($normal_hours-$pto_hours-$holiday_hours-$training_hours))*100
+            $percent_billable = ($billable_hours/$normal_hours)*100
+            $percent_utilized = (($billable_hours+$utilized_hours)/$normal_hours)*100
         } else {
             $percent_billable = 0
             $percent_utilized = 0
