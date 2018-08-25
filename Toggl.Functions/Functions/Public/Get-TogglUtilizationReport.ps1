@@ -26,9 +26,9 @@ function Get-TogglUtilizationReport {
     [CmdletBinding()]
     Param (
         [Parameter(Position=0)]
-        [datetime]$From = $(if ((Get-Date).Hour -lt 17) { (Get-Date).AddDays(-1) } else { Get-Date }),
+        [datetime]$From,
         [Parameter(Position=1)]
-        [datetime]$To = $(if ((Get-Date).Hour -lt 17) { (Get-Date).AddDays(-1) } else { Get-Date }),
+        [datetime]$To,
         [switch]$ExcludeCurrentPeriod
     )
 
@@ -36,18 +36,15 @@ function Get-TogglUtilizationReport {
     $report = @()
     
     # Normalize $From
-    if ($From.Day -gt 1 -and $From.Day -le 15) {
-        $From = Get-Date $From -Day 1
-    } elseif ($From.Day -gt 16) {
-        $From = Get-Date $From -Day 16
+    if (-not $From) {
+        $From = Get-Date -Day 1
     }
     
     if ($ExcludeCurrentPeriod) {
-        if ($To.Date -ge (Get-Date -Day 16).Date) {
-            $To = Get-Date -Day 15
-        } elseif ($To.Date -ge (Get-Date -Day 1).Date) {
-            $To = (Get-Date -Day 1).AddDays(-1)
-        }
+        $To = (Get-Date -Day 1).AddDays(-1)
+    }
+    elseif (-not $To) {
+        $To = Get-Date
     }
     
     while ($From -le $To) {
@@ -65,22 +62,10 @@ function Get-TogglUtilizationReport {
         
         # Determine period start and end
         $period_start = $From.Day
-        switch ($period_start) {
-            1 {
-                if ($From.AddDays(14) -gt $To) {
-                    $period_end = $To.Day
-                } else {
-                    $period_end = $From.AddDays(14).Day
-                }
-            }
-            16 {
-                if ($month_last_day -gt $To) {
-                    $period_end = $To.Day
-                } else {
-                    $period_end = $month_last_day.Day
-                }
-            }
-            default {throw "Current Date out of range: $From"}
+        if ($To -lt $month_last_day) {
+            $period_end = $To.Day
+        } else {
+            $period_end = $month_last_day.Day
         }
     
         # Calculate normal working hours for the specified pay period
@@ -155,11 +140,8 @@ function Get-TogglUtilizationReport {
 
         $report += $obj
         
-        switch ($From.Day) {
-            1 {$From = $From.AddDays(15)}
-            16 {$From = Get-Date $From.AddMonths(1) -Day 1}
-            default {throw "Current date out of range: $From"}
-        }
+        # Advance to next pay period
+        $From = Get-Date $From.AddMonths(1) -Day 1
     }
     
     Write-Output $report
