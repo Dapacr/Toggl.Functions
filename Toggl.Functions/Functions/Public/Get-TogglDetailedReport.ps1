@@ -106,7 +106,7 @@ function Get-TogglDetailedReport {
         
         $report = $report | Select-Object @{n='Date';e={Get-Date $_.start -Format yyyy-MM-dd}},
                                         @{n='Client';e={$_.client}},
-                                        @{n='Ticket';e={($_.project -replace '(.*?\b(\d+)\b.*|.*)','$2') -replace '$^','n/a'}},
+                                        @{n='Ticket';e={($_.project -replace '(.*?\s?#\s?(\d+)\b.*|.*)','$2') -replace '$^','n/a'}},
                                         @{n='Description';e={$_.description}},
                                         @{n='Project';e={$_.project -replace '^Ticket\s?#\s?\d+\s\((.+)\)','$1'}},
                                         @{n='Duration(hrs)';e={'{0:n2}' -f ($_.dur/1000/60/60)}},
