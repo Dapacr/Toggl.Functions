@@ -17,7 +17,7 @@ function Get-TogglMonthlyHoursReport {
     [CmdletBinding()]
     Param (
         [Parameter(Position=0)]
-        [datetime]$From = (Get-Date).AddMonths(-12),
+        [datetime]$From = (Get-Date -Day 1).AddMonths(-12),
         [Parameter(Position=1)]
         [datetime]$To = (Get-Date)
     )
@@ -37,12 +37,14 @@ function Get-TogglMonthlyHoursReport {
         $billable_hrs = $period.Group.'Billable(hrs)' | Measure-Object -Sum | Select-Object -ExpandProperty Sum
         $pto_hrs = $period.Group.'PTO(hrs)' | Measure-Object -Sum | Select-Object -ExpandProperty Sum
         $training_hrs = $period.Group.'Training(hrs)' | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+        $normal_hrs = $period.Group.'Normal(hrs)' | Measure-Object -Sum | Select-Object -ExpandProperty Sum
         
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Month'  -Value "$month-$year"
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Billable(hrs)' -Value ('{0:N2}' -f $billable_hrs)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'PTO(hrs)' -Value ('{0:N2}' -f $pto_hrs)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Training(hrs)' -Value ('{0:N2}' -f $training_hrs)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Total(hrs)' -Value ('{0:N2}' -f ($billable_hrs + $pto_hrs + $training_hrs))
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Target(hrs)' -Value ('{0:N2}' -f $normal_hrs)
         
         $report += $obj
     }

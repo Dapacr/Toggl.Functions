@@ -143,6 +143,10 @@
                 <Width>10</Width>
                 <Alignment>Right</Alignment>
             </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>11</Width>
+                <Alignment>Right</Alignment>
+            </TableColumnHeader>
         </TableHeaders>
         <TableRowEntries>
             <TableRowEntry>
@@ -161,6 +165,9 @@
                     </TableColumnItem>
                     <TableColumnItem>
                         <PropertyName>Total(hrs)</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Target(hrs)</PropertyName>
                     </TableColumnItem>
                 </TableColumnItems>
             </TableRowEntry>
