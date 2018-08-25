@@ -19,9 +19,6 @@
                 <Width>20</Width>
             </TableColumnHeader>
             <TableColumnHeader>
-                <Width>6</Width>
-            </TableColumnHeader>
-            <TableColumnHeader>
                 <Width>25</Width>
             </TableColumnHeader>
             <TableColumnHeader/>
@@ -37,9 +34,6 @@
                     </TableColumnItem>
                     <TableColumnItem>
                         <PropertyName>Client</PropertyName>
-                    </TableColumnItem>
-                    <TableColumnItem>
-                        <PropertyName>Ticket</PropertyName>
                     </TableColumnItem>
                     <TableColumnItem>
                         <PropertyName>Project</PropertyName>
