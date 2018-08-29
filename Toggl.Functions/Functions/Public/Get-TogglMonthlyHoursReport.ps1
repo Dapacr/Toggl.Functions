@@ -44,7 +44,10 @@ function Get-TogglMonthlyHoursReport {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'PTO(hrs)' -Value ('{0:N2}' -f $pto_hrs)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Training(hrs)' -Value ('{0:N2}' -f $training_hrs)
         Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Total(hrs)' -Value ('{0:N2}' -f ($billable_hrs + $pto_hrs + $training_hrs))
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Target(hrs)' -Value ('{0:N2}' -f $normal_hrs)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Target(100%)' -Value ('{0:N2}' -f $normal_hrs)
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Target(90%)' -Value ('{0:N2}' -f ($normal_hrs * 0.9))
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Target(80%)' -Value ('{0:N2}' -f ($normal_hrs * 0.8))
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name 'Target(70%)' -Value ('{0:N2}' -f ($normal_hrs * 0.7))
         
         $report += $obj
     }

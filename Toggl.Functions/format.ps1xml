@@ -144,6 +144,18 @@
                 <Alignment>Right</Alignment>
             </TableColumnHeader>
             <TableColumnHeader>
+                <Width>12</Width>
+                <Alignment>Right</Alignment>
+            </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>11</Width>
+                <Alignment>Right</Alignment>
+            </TableColumnHeader>
+            <TableColumnHeader>
+                <Width>11</Width>
+                <Alignment>Right</Alignment>
+            </TableColumnHeader>
+            <TableColumnHeader>
                 <Width>11</Width>
                 <Alignment>Right</Alignment>
             </TableColumnHeader>
@@ -167,7 +179,16 @@
                         <PropertyName>Total(hrs)</PropertyName>
                     </TableColumnItem>
                     <TableColumnItem>
-                        <PropertyName>Target(hrs)</PropertyName>
+                        <PropertyName>Target(100%)</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Target(90%)</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Target(80%)</PropertyName>
+                    </TableColumnItem>
+                    <TableColumnItem>
+                        <PropertyName>Target(70%)</PropertyName>
                     </TableColumnItem>
                 </TableColumnItems>
             </TableRowEntry>
